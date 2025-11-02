@@ -2124,3 +2124,93 @@ input:focus, textarea:focus, select:focus {
         padding: 12px;
     }
 }
+.currency-selector {
+    margin-left: 20px;
+}
+
+.currency-dropdown {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    color: white;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+}
+
+.currency-dropdown option {
+    background: #2d3748;
+    color: white;
+}
+
+.currency-dropdown:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.3);
+}
+
+/* Обновленные стили для цен */
+.price-discounted {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.9rem;
+}
+
+.current-price {
+    color: #51cf66;
+    font-weight: 700;
+    font-size: 1.3rem;
+}
+
+.discount-badge {
+    background: #ff6b6b;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.price-saving {
+    color: #ffd43b;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.price-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+.price-error {
+    text-align: center;
+    color: #ff6b6b;
+}
+
+.price-unavailable {
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+}
+
+/* Адаптивность для валюты */
+@media (max-width: 768px) {
+    .currency-selector {
+        margin-left: 10px;
+    }
+    
+    .currency-dropdown {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+}

@@ -7,6 +7,7 @@ const CONFIG = {
 class GameFinderApp {
     constructor() {
         console.log('🎮 Initializing GameFinderApp...');
+        this.priceAPI = window.priceAPI;
         this.initApp();
     }
 
@@ -30,13 +31,15 @@ class GameFinderApp {
         this.gamesContainer = document.getElementById('gamesContainer');
         this.analysisContent = document.getElementById('aiAnalysis');
         this.exampleChips = document.querySelectorAll('.example-chip');
+        this.currencySelect = document.getElementById('currencySelect');
 
         console.log('📝 DOM elements loaded:', {
             searchInput: !!this.searchInput,
             searchBtn: !!this.searchBtn,
             resultsSection: !!this.resultsSection,
             gamesContainer: !!this.gamesContainer,
-            exampleChips: this.exampleChips.length
+            exampleChips: this.exampleChips.length,
+            currencySelect: !!this.currencySelect
         });
     }
 
@@ -70,6 +73,18 @@ class GameFinderApp {
                     this.handleSearch();
                 });
             });
+        }
+
+        // Выбор валюты
+        if (this.currencySelect) {
+            this.currencySelect.addEventListener('change', (e) => {
+                this.changeCurrency(e.target.value);
+            });
+            // Установите сохраненную валюту
+            const savedCurrency = this.priceAPI.getSavedCurrency();
+            if (savedCurrency) {
+                this.currencySelect.value = savedCurrency;
+            }
         }
 
         console.log('🎯 Event listeners attached');
@@ -161,155 +176,204 @@ class GameFinderApp {
     }
 
     displayGames(games) {
-    if (!this.gamesContainer) return;
+        if (!this.gamesContainer) return;
 
-    this.gamesContainer.innerHTML = games.map((game, index) => `
-        <div class="game-card fade-in-up" style="animation-delay: ${index * 0.1}s">
-            <div class="game-header">
-                <div class="game-title-section">
-                    <h4 class="game-title">${game.name}</h4>
-                    <div class="game-meta">
-                        <span class="game-genre">${game.genre}</span>
-                        ${game.platforms ? `<span class="game-platforms">${game.platforms.slice(0, 3).join(', ')}</span>` : ''}
+        this.gamesContainer.innerHTML = games.map((game, index) => `
+            <div class="game-card fade-in-up" style="animation-delay: ${index * 0.1}s">
+                <div class="game-header">
+                    <div class="game-title-section">
+                        <h4 class="game-title">${game.name}</h4>
+                        <div class="game-meta">
+                            <span class="game-genre">${game.genre}</span>
+                            ${game.platforms ? `<span class="game-platforms">${game.platforms.slice(0, 3).join(', ')}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="match-score">
+                        <div class="score-circle">${Math.round(game.moodMatch * 100)}%</div>
+                        <div class="score-label">совпадение</div>
                     </div>
                 </div>
-                <div class="match-score">
-                    <div class="score-circle">${Math.round(game.moodMatch * 100)}%</div>
-                    <div class="score-label">совпадение</div>
+                <p class="game-description">${game.description}</p>
+                <div class="game-details">
+                    <div class="detail-item">
+                        <span class="detail-icon">🕐</span>
+                        <span>${game.playtime}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">🎭</span>
+                        <span>${game.vibe}</span>
+                    </div>
+                </div>
+                <div class="game-reason">
+                    <div class="reason-title">🎯 Почему идеально подходит:</div>
+                    <p class="reason-text">${game.whyPerfect}</p>
+                </div>
+                
+                <!-- БЛОК МАГАЗИНОВ И ЦЕН -->
+                <div class="stores-container">
+                    <h4>🛒 Где купить:</h4>
+                    <div class="store-buttons">
+                        <button class="store-btn" data-store="steam" data-game="${game.name}">Steam</button>
+                        <button class="store-btn" data-store="epic" data-game="${game.name}">Epic Games</button>
+                        <button class="store-btn" data-store="xbox" data-game="${game.name}">XBOX</button>
+                        <button class="store-btn" data-store="ea" data-game="${game.name}">EA App</button>
+                        <button class="store-btn" data-store="ubisoft" data-game="${game.name}">Ubisoft</button>
+                    </div>
+                    <div class="price-info" id="price-${game.name.replace(/\s+/g, '-').toLowerCase()}">
+                        <p class="price-loading">Выберите магазин для просмотра цены</p>
+                    </div>
                 </div>
             </div>
-            <p class="game-description">${game.description}</p>
-            <div class="game-details">
-                <div class="detail-item">
-                    <span class="detail-icon">🕐</span>
-                    <span>${game.playtime}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-icon">🎭</span>
-                    <span>${game.vibe}</span>
-                </div>
-            </div>
-            <div class="game-reason">
-                <div class="reason-title">🎯 Почему идеально подходит:</div>
-                <p class="reason-text">${game.whyPerfect}</p>
-            </div>
-            
-            <!-- БЛОК МАГАЗИНОВ И ЦЕН -->
-            <div class="stores-container">
-                <h4>🛒 Где купить:</h4>
-                <div class="store-buttons">
-                    <button class="store-btn" data-store="steam" data-game="${game.name}">Steam</button>
-                    <button class="store-btn" data-store="epic" data-game="${game.name}">Epic Games</button>
-                    <button class="store-btn" data-store="xbox" data-game="${game.name}">XBOX</button>
-                    <button class="store-btn" data-store="ea" data-game="${game.name}">EA App</button>
-                    <button class="store-btn" data-store="ubisoft" data-game="${game.name}">Ubisoft</button>
-                </div>
-                <div class="price-info" id="price-${game.name.replace(/\s+/g, '-').toLowerCase()}">
-                    <p class="price-loading">Выберите магазин для просмотра цены</p>
-                </div>
-            </div>
-        </div>
-    `).join('');
+        `).join('');
 
-    // Добавляем обработчики для кнопок магазинов
-    this.initStoreButtons();
-}
+        // Добавляем обработчики для кнопок магазинов
+        this.initStoreButtons();
+    }
 
-// Новая функция для инициализации кнопок магазинов
-initStoreButtons() {
-    const storeButtons = document.querySelectorAll('.store-btn');
-    
-    storeButtons.forEach(button => {
-        button.addEventListener('click', (e) => {
-            const store = e.target.getAttribute('data-store');
-            const gameName = e.target.getAttribute('data-game');
-            this.handleStoreClick(store, gameName, e.target);
+    // Новая функция для инициализации кнопок магазинов
+    initStoreButtons() {
+        const storeButtons = document.querySelectorAll('.store-btn');
+        
+        storeButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const store = e.target.getAttribute('data-store');
+                const gameName = e.target.getAttribute('data-game');
+                this.handleStoreClick(store, gameName, e.target);
+            });
         });
-    });
-}
-
-// Обработчик клика по магазину
-async handleStoreClick(store, gameName, button) {
-    // Убираем активный класс у всех кнопок в этой карточке
-    const allButtons = button.parentElement.querySelectorAll('.store-btn');
-    allButtons.forEach(btn => btn.classList.remove('active'));
-    
-    // Добавляем активный класс к нажатой кнопке
-    button.classList.add('active');
-    
-    // Показываем загрузку
-    const priceInfo = document.getElementById(`price-${gameName.replace(/\s+/g, '-').toLowerCase()}`);
-    priceInfo.innerHTML = '<p class="price-loading">Загрузка цены...</p>';
-    
-    try {
-        const price = await this.fetchGamePrice(gameName, store);
-        this.displayPrice(price, store, gameName, priceInfo);
-    } catch (error) {
-        console.error('Error fetching price:', error);
-        priceInfo.innerHTML = '<p class="price-error">Цена не найдена</p>';
     }
-}
 
-// Функция для получения цены (заглушка)
-async fetchGamePrice(gameName, store) {
-    // Имитация загрузки
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Заглушки цен для демонстрации
-    const priceMap = {
-        'steam': { price: '1999 руб', discount: '-20%' },
-        'epic': { price: '1899 руб', discount: null },
-        'xbox': { price: '2099 руб', discount: '-10%' },
-        'ea': { price: '1799 руб', discount: null },
-        'ubisoft': { price: '1950 руб', discount: '-15%' }
-    };
-    
-    return priceMap[store] || { price: 'Нет в продаже', discount: null };
-}
-
-// Функция для отображения цены
-displayPrice(priceData, store, gameName, priceElement) {
-    const storeNames = {
-        'steam': 'Steam',
-        'epic': 'Epic Games', 
-        'xbox': 'Microsoft Store',
-        'ea': 'EA App',
-        'ubisoft': 'Ubisoft Store'
-    };
-    
-    if (priceData.price === 'Нет в продаже') {
-        priceElement.innerHTML = `
-            <div class="price-error">
-                <p>Игра не найдена в ${storeNames[store]}</p>
-            </div>
-        `;
-    } else {
-        priceElement.innerHTML = `
-            <div class="price-success">
-                <div class="price-amount">${priceData.price}</div>
-                ${priceData.discount ? `<div class="price-discount" style="color: #ffd43b; font-size: 0.9rem;">${priceData.discount}</div>` : ''}
-                <div class="price-store">в ${storeNames[store]}</div>
-                <button class="buy-btn" onclick="window.open('${this.getStoreUrl(store, gameName)}', '_blank')">
-                    Купить сейчас
-                </button>
-            </div>
-        `;
+    // Обработчик клика по магазину
+    async handleStoreClick(store, gameName, button) {
+        // Убираем активный класс у всех кнопок в этой карточке
+        const allButtons = button.parentElement.querySelectorAll('.store-btn');
+        allButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Добавляем активный класс к нажатой кнопке
+        button.classList.add('active');
+        
+        // Показываем загрузку
+        const priceInfo = document.getElementById(`price-${gameName.replace(/\s+/g, '-').toLowerCase()}`);
+        priceInfo.innerHTML = '<p class="price-loading">Загрузка цены...</p>';
+        
+        try {
+            const price = await this.fetchGamePrice(gameName, store);
+            this.displayPrice(price, store, gameName, priceInfo);
+        } catch (error) {
+            console.error('Error fetching price:', error);
+            priceInfo.innerHTML = '<p class="price-error">Цена не найдена</p>';
+        }
     }
-}
 
-// Функция для получения URL магазина
-getStoreUrl(store, gameName) {
-    const encodedName = encodeURIComponent(gameName);
-    const storeUrls = {
-        'steam': `https://store.steampowered.com/search/?term=${encodedName}`,
-        'epic': `https://store.epicgames.com/ru/browse?q=${encodedName}`,
-        'xbox': `https://www.xbox.com/ru-ru/search?q=${encodedName}`,
-        'ea': `https://www.ea.com/ru-ru/search?q=${encodedName}`,
-        'ubisoft': `https://store.ubi.com/ru/search/?q=${encodedName}`
-    };
-    
-    return storeUrls[store] || '#';
-}
+    // Функция для получения реальной цены
+    async fetchGamePrice(gameName, store) {
+        try {
+            let priceData;
+            
+            switch(store) {
+                case 'steam':
+                    priceData = await this.priceAPI.getSteamPrice(gameName);
+                    break;
+                case 'epic':
+                    priceData = await this.priceAPI.getEpicPrice(gameName);
+                    break;
+                case 'xbox':
+                    priceData = await this.priceAPI.getXboxPrice(gameName);
+                    break;
+                case 'ea':
+                case 'ubisoft':
+                    priceData = this.priceAPI.getFallbackPrice(store);
+                    break;
+                default:
+                    priceData = this.priceAPI.getFallbackPrice('steam');
+            }
+            
+            return priceData;
+        } catch (error) {
+            console.error('Price fetch error:', error);
+            return this.priceAPI.getFallbackPrice(store);
+        }
+    }
+
+    // Функция для отображения цены
+    displayPrice(priceData, store, gameName, priceElement) {
+        if (!priceData) {
+            priceElement.innerHTML = '<p class="price-error">Ошибка загрузки цены</p>';
+            return;
+        }
+
+        const storeNames = {
+            'steam': 'Steam',
+            'epic': 'Epic Games', 
+            'xbox': 'Microsoft Store',
+            'ea': 'EA App',
+            'ubisoft': 'Ubisoft Store'
+        };
+
+        if (priceData.price === null) {
+            priceElement.innerHTML = `
+                <div class="price-unavailable">
+                    <p>Игра не найдена в ${storeNames[store]}</p>
+                </div>
+            `;
+        } else {
+            const formattedPrice = this.priceAPI.formatPrice(priceData.price, priceData.currency);
+            const formattedOriginal = priceData.originalPrice ? 
+                this.priceAPI.formatPrice(priceData.originalPrice, priceData.currency) : null;
+            
+            const saving = priceData.originalPrice ? 
+                priceData.originalPrice - priceData.price : 0;
+            const formattedSaving = this.priceAPI.formatPrice(saving, priceData.currency);
+
+            priceElement.innerHTML = `
+                <div class="price-success">
+                    <div class="price-discounted">
+                        ${formattedOriginal ? `
+                            <span class="original-price">${formattedOriginal}</span>
+                        ` : ''}
+                        <span class="current-price">${formattedPrice}</span>
+                        ${priceData.discount ? `
+                            <span class="discount-badge">-${priceData.discount}%</span>
+                        ` : ''}
+                    </div>
+                    ${saving > 0 ? `
+                        <div class="price-saving">Экономия: ${formattedSaving}</div>
+                    ` : ''}
+                    <div class="price-store">в ${storeNames[store]}</div>
+                    <button class="buy-btn" onclick="window.openStore('${store}', '${gameName}')">
+                        Купить сейчас
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    // Функция смены валюты
+    async changeCurrency(currency) {
+        this.priceAPI.setCurrency(currency);
+        
+        // Перезагружаем цены для всех открытых карточек
+        const activeStoreButtons = document.querySelectorAll('.store-btn.active');
+        activeStoreButtons.forEach(button => {
+            const store = button.getAttribute('data-store');
+            const gameName = button.getAttribute('data-game');
+            this.handleStoreClick(store, gameName, button);
+        });
+    }
+
+    // Функция для получения URL магазина
+    getStoreUrl(store, gameName) {
+        const encodedName = encodeURIComponent(gameName);
+        const storeUrls = {
+            'steam': `https://store.steampowered.com/search/?term=${encodedName}`,
+            'epic': `https://store.epicgames.com/ru/browse?q=${encodedName}`,
+            'xbox': `https://www.xbox.com/ru-ru/search?q=${encodedName}`,
+            'ea': `https://www.ea.com/ru-ru/search?q=${encodedName}`,
+            'ubisoft': `https://store.ubi.com/ru/search/?q=${encodedName}`
+        };
+        
+        return storeUrls[store] || '#';
+    }
 
     showStats(gameCount) {
         const gamesGrid = document.querySelector('.games-grid');
@@ -508,18 +572,6 @@ const globalStyles = `
 const styleSheet = document.createElement('style');
 styleSheet.textContent = globalStyles;
 document.head.appendChild(styleSheet);
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('📄 DOM fully loaded');
-    
-    // Пытаемся инициализировать сразу
-    if (!initializeApp()) {
-        setTimeout(() => {
-            if (!initializeApp()) {
-                console.error('❌ Failed to initialize GameFinderApp after retry');
-            }
-        }, 500);
-    }
-});
 
 // Глобальная функция для открытия магазинов
 window.openStore = function(store, gameName) {
