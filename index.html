@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameFinders - AI поиск игр по настроению</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Анимированный фон -->
+    <div class="animated-bg"></div>
+    <div class="particles-container" id="particles"></div>
+
+    <!-- Главный контейнер -->
+    <div class="container">
+        <!-- Хедер -->
+        <header class="header">
+    <div class="glass-card header-content">
+        <!-- Логотип слева -->
+        <div class="logo-left">
+            <div class="logo-icon">🎮</div>
+            <h1 class="logo-title">GameFinders</h1>
+        </div>
+
+        <!-- Навигация справа -->
+        <nav class="nav">
+            <a href="#search" class="nav-btn">
+                <div class="nav-icon">🔍</div>
+                <span class="nav-text">Поиск</span>
+            </a>
+            <a href="#about" class="nav-btn">
+                <div class="nav-icon">ℹ️</div>
+                <span class="nav-text">О проекте</span>
+            </a>
+            <a href="https://discord.gg/MeHJ9epedA" class="nav-btn discord-btn" target="_blank">
+                <div class="nav-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.27 5.33C17.94 4.71 16.5 4.26 15 4a.09.09 0 0 0-.07.03c-.18.33-.39.76-.53 1.09a16.09 16.09 0 0 0-4.8 0c-.14-.34-.35-.76-.54-1.09c-.01-.02-.04-.03-.07-.03c-1.5.26-2.93.71-4.27 1.33c-.01 0-.02.01-.03.02c-2.72 4.07-3.47 8.03-3.1 11.95c0 .02.01.04.03.05c1.8 1.32 3.53 2.12 5.24 2.65c.03.01.06 0 .07-.02c.4-.55.76-1.13 1.07-1.74c.02-.04 0-.08-.04-.09c-.57-.22-1.11-.48-1.64-.78c-.04-.02-.04-.08-.01-.11c.11-.08.22-.17.33-.25c.02-.02.05-.02.07-.01c3.44 1.57 7.15 1.57 10.55 0c.02-.01.05-.01.07.01c.11.09.22.17.33.25c.04.03.04.09-.01.11c-.52.31-1.07.56-1.64.78c-.04.01-.05.06-.04.09c.32.61.68 1.19 1.07 1.74c.03.01.06.02.09.01c1.72-.53 3.45-1.33 5.25-2.65c.02-.01.03-.03.03-.05c.44-4.53-.73-8.46-3.1-11.95c-.01-.01-.02-.02-.04-.02zM8.52 14.91c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.9.96 1.89 2.12c0 1.17-.84 2.12-1.89 2.12zm6.97 0c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.9.96 1.89 2.12c0 1.17-.83 2.12-1.89 2.12z"/>
+                    </svg>
+                </div>
+                <span class="nav-text">Discord</span>
+            </a>
+            <a href="https://www.dropbox.com/scl/fi/q45vwmhlswqtnfo38xm5a/NexusLauncher.exe?rlkey=pylfjb33u8108pd439l1n485b&st=1epc3b8q&dl=1" class="nav-btn download-btn" download>
+                <div class="nav-icon">⬇️</div>
+                <span class="nav-text">Лаунчер</span>
+            </a>
+        </nav>
+    </div>
+</header>
+
+        <!-- Герой секция -->
+        <section class="hero">
+            <div class="glass-card hero-card">
+                <motion class="hero-content">
+                    <h1 class="hero-title">
+                        Найди идеальную игру<br>
+                        <span class="gradient-text">с помощью AI</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Просто опиши своё настроение, и наш искусственный интеллект подберёт 
+                        игры, которые идеально тебе подходят
+                    </p>
+                    <section class="download-section">
+    <div class="glass-card download-card">
+        <div class="download-content">
+            <div class="download-icon">🚀</div>
+            <h2>Установите наш лаунчер</h2>
+            <p>Для лучшего опыта использования GameFinders скачайте наш лаунчер</p>
+            <div class="download-features">
+                <div class="feature">⚡ Быстрый запуск</div>
+                <div class="feature">🎮 Умные рекомендации</div>
+                <div class="feature">🔔 Уведомления о новых играх</div>
+            </div>
+            <a href="https://www.dropbox.com/scl/fi/q45vwmhlswqtnfo38xm5a/NexusLauncher.exe?rlkey=pylfjb33u8108pd439l1n485b&st=1epc3b8q&dl=1" 
+               class="download-main-btn" download>
+                <span class="btn-icon">⬇️</span>
+                Скачать лаунчер
+                <span class="btn-size">(125 MB)</span>
+            </a>
+            <div class="download-info">
+                <span class="version">Версия 1.0.0</span>
+                <span class="platform">Windows 10/11</span>
+            </div>
+        </div>
+    </div>
+</section>
+                    
+                    <!-- Поисковая форма -->
+                    <div class="search-form">
+                        <div class="input-group">
+                            <textarea 
+                                id="searchInput"
+                                class="search-input"
+                                placeholder="Опиши, что ты хочешь... Например: 'Ищу что-то расслабляющее после работы' или 'Хочу адреналиновый экшен'"
+                                rows="3"
+                            ></textarea>
+                            <button id="searchBtn" class="search-btn">
+                                <span class="btn-text">Найти игры</span>
+                                <div class="loading-spinner hidden">
+                                    <div class="spinner"></div>
+                                    <span>AI ищет...</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Быстрые примеры -->
+                    <div class="quick-examples">
+                        <p>Попробуй:</p>
+                        <div class="example-chips">
+                            <button class="example-chip" data-example="Хочу что-то расслабляющее и уютное">😌 Расслабляющее</button>
+                            <button class="example-chip" data-example="Ищу адреналиновый экшен с стрельбой">💥 Адреналин</button>
+                            <button class="example-chip" data-example="Хочу интересную историю с сюжетом">📖 Сюжетная</button>
+                            <button class="example-chip" data-example="Нужна стратегия для ума">♟️ Стратегия</button>
+                        </div>
+                    </div>
+                </motion>
+            </div>
+        </section>
+
+        <!-- Секция результатов -->
+        <section id="results" class="results-section hidden">
+            <div class="glass-card results-card">
+                <!-- Анализ AI -->
+                <div class="ai-analysis" id="aiAnalysis">
+                    <div class="analysis-header">
+                        <h3>🎯 AI анализ вашего запроса</h3>
+                    </div>
+                    <div class="analysis-content" id="analysisContent">
+                        <!-- Сюда будет вставлен анализ от AI -->
+                    </div>
+                </div>
+
+                <!-- Рекомендованные игры -->
+                <div class="games-grid" id="gamesGrid">
+                    <h3>🎮 Подобранные игры</h3>
+                    <div class="games-container" id="gamesContainer">
+                        <!-- Сюда будут вставлены карточки игр -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Секция "О проекте" -->
+        <section id="about" class="about-section">
+            <div class="glass-card about-card">
+                <h2>Как это работает?</h2>
+                <div class="features-grid">
+                    <div class="feature">
+                        <div class="feature-icon">🤖</div>
+                        <h3>AI DeepSeek</h3>
+                        <p>Используем передовой искусственный интеллект для анализа вашего настроения</p>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">🎯</div>
+                        <h3>Точный подбор</h3>
+                        <p>Подбираем игры на основе эмоций, темпа и стиля геймплея</p>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">💫</div>
+                        <h3>Красивый дизайн</h3>
+                        <p>Современный стеклянный дизайн с анимациями</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Футер -->
+        <footer class="footer">
+            <div class="glass-card footer-content">
+                <p>&copy; 2024 GameFinders. Находите идеальные игры с помощью AI.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Скрипты -->
+    <script src="js/deepseek-ai.js"></script>
+    <script src="js/ui-effects.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
+<script>
+// Гарантированная инициализация
+function initializeApp() {
+    if (typeof GameFinderApp !== 'undefined') {
+        window.gameFinderApp = new GameFinderApp();
+        console.log('✅ App initialized successfully');
+    } else {
+        console.error('❌ GameFinderApp not found, retrying...');
+        setTimeout(initializeApp, 100);
+    }
+}
+
+// Ждем полной загрузки страницы
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
+}
+</script>

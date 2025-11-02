@@ -1,0 +1,2009 @@
+/* Базовые стили */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-blue: #0ea5e9;
+    --primary-purple: #8b5cf6;
+    --glass-light: rgba(255, 255, 255, 0.1);
+    --glass-dark: rgba(0, 0, 0, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --text-white: #ffffff;
+    --text-gray: rgba(255, 255, 255, 0.8);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%); /* Более темные оттенки */
+    min-height: 100vh;
+    color: var(--text-white);
+    overflow-x: hidden;
+}
+
+/* Анимированный фон */
+.animated-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #5a67d8, #3c35a0, #910f52, #a5185c); /* Темнее */
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    z-index: -2;
+    opacity: 0.9; /* Добавляем прозрачность */
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+/* Добавьте темный оверлей */
+.animated-bg::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3); /* Темный оверлей */
+    z-index: -1;
+}
+
+.particles-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+/* Стеклянный эффект */
+.glass-card {
+    background: var(--glass-light);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Контейнер */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Хедер */
+.header {
+    padding: 20px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    font-size: 2rem;
+}
+
+.logo h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.nav {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-gray);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    padding: 12px 20px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    min-width: 100px;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.6s;
+}
+
+.nav-btn:hover {
+    color: var(--text-white);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.nav-btn:hover::before {
+    left: 100%;
+}
+
+.nav-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 18px;
+}
+
+.nav-btn:hover .nav-icon {
+    transform: scale(1.1);
+}
+
+.nav-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Герой секция */
+.hero {
+    padding: 180px 0 80px; /* Увеличьте верхний отступ */
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+}
+
+.hero-card {
+    padding: 60px;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 20px;
+}
+
+.gradient-text {
+    background: linear-gradient(45deg, var(--primary-blue), var(--primary-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-subtitle {
+    font-size: 1.3rem;
+    color: var(--text-gray);
+    margin-bottom: 40px;
+    line-height: 1.6;
+}
+
+/* Форма поиска */
+.search-form {
+    max-width: 700px;
+    margin: 0 auto 40px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.search-input {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 20px;
+    color: var(--text-white);
+    font-size: 1.1rem;
+    resize: vertical;
+    min-height: 120px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.3);
+}
+
+.search-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.search-btn {
+    background: linear-gradient(45deg, var(--primary-blue), var(--primary-purple));
+    border: none;
+    border-radius: 15px;
+    padding: 18px 40px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.search-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(14, 165, 233, 0.4);
+}
+
+.search-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.loading-spinner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Быстрые примеры */
+.quick-examples {
+    margin-top: 30px;
+}
+
+.quick-examples p {
+    color: var(--text-gray);
+    margin-bottom: 15px;
+}
+
+.example-chips {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.example-chip {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    border-radius: 25px;
+    padding: 10px 20px;
+    color: var(--text-white);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.example-chip:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Секция результатов */
+.results-section {
+    padding: 80px 0;
+}
+
+.results-card {
+    padding: 40px;
+}
+
+.ai-analysis {
+    margin-bottom: 40px;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+}
+
+.analysis-header h3 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--text-white);
+}
+
+.analysis-content {
+    line-height: 1.6;
+}
+
+.mood-tags {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+.mood-tag {
+    background: linear-gradient(45deg, var(--primary-blue), var(--primary-purple));
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+/* Сетка игр */
+.games-grid h3 {
+    font-size: 1.5rem;
+    margin-bottom: 25px;
+}
+
+.games-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+}
+
+.game-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 25px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-blue);
+    box-shadow: 0 10px 30px rgba(14, 165, 233, 0.2);
+}
+
+.game-header {
+    display: flex;
+    justify-content: between;
+    align-items: start;
+    margin-bottom: 15px;
+}
+
+.game-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.game-genre {
+    background: rgba(14, 165, 233, 0.2);
+    padding: 3px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    color: var(--primary-blue);
+}
+
+.match-score {
+    background: linear-gradient(45deg, #10b981, #059669);
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.game-description {
+    color: var(--text-gray);
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.game-reason {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 10px;
+    border-left: 4px solid var(--primary-blue);
+}
+
+.reason-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--primary-blue);
+}
+
+/* Секция "О проекте" */
+.about-section {
+    padding: 80px 0;
+}
+
+.about-card {
+    padding: 50px;
+}
+
+.about-card h2 {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+}
+
+.feature {
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.feature-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.feature h3 {
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+}
+
+.feature p {
+    color: var(--text-gray);
+    line-height: 1.6;
+}
+
+/* Футер */
+.footer {
+    padding: 40px 0;
+}
+
+.footer-content {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-gray);
+}
+
+/* Анимации */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-card {
+        padding: 30px 20px;
+    }
+    
+    .games-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .nav {
+        gap: 20px;
+    }
+}
+.glass-card {
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    will-change: transform, background;
+    transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Улучшенный ховер-эффект */
+.glass-card:hover {
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.15),
+        0 0 80px rgba(14, 165, 233, 0.1);
+}
+
+/* Предотвращение мерцания */
+.glass-card {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Оптимизация производительности */
+@media (prefers-reduced-motion: reduce) {
+    .glass-card {
+        transition: none;
+        transform: none !important;
+    }
+}
+/* Добавьте в конец файла */
+
+/* Статистика */
+.stats-info {
+    margin-bottom: 20px;
+}
+
+.stats-card {
+    background: linear-gradient(45deg, #0ea5e9, #8b5cf6);
+    padding: 15px 20px;
+    border-radius: 12px;
+    color: white;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    animation: fadeInUp 0.5s ease;
+}
+
+.stats-icon {
+    font-size: 1.2rem;
+}
+
+/* Улучшенные карточки игр */
+.game-title-section {
+    flex: 1;
+}
+
+.game-meta {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+    flex-wrap: wrap;
+}
+
+.game-platforms {
+    background: rgba(139, 92, 246, 0.3);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: #8b5cf6;
+    border: 1px solid rgba(139, 92, 246, 0.5);
+}
+
+.match-score {
+    text-align: center;
+    min-width: 70px;
+}
+
+.score-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #10b981, #059669);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: white;
+    margin: 0 auto 5px;
+}
+
+.score-label {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.game-details {
+    display: flex;
+    gap: 15px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.detail-icon {
+    font-size: 1rem;
+}
+
+/* Анализ AI */
+.analysis-item {
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+.key-factors {
+    margin: 20px 0;
+}
+
+.reasoning {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border-left: 4px solid #0ea5e9;
+}
+
+/* Адаптивность для многих игр */
+.games-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 25px;
+    max-height: none;
+}
+
+@media (max-width: 768px) {
+    .games-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .game-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    .match-score {
+        align-self: flex-end;
+    }
+}
+
+/* Анимации для плавного появления */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease both;
+}
+.debug-info {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #00ff00;
+    padding: 10px;
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 12px;
+    z-index: 10000;
+}
+
+/* Убедитесь что кнопки кликабельны */
+.search-btn {
+    cursor: pointer !important;
+    position: relative;
+    z-index: 10;
+}
+
+.search-btn:not(:disabled):hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 25px rgba(14, 165, 233, 0.4) !important;
+}
+
+.example-chip {
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+}
+
+.example-chip:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Гарантируем что элементы видны */
+.hidden {
+    display: none !important;
+}
+
+#results.hidden {
+    display: none !important;
+}
+
+/* Улучшаем видимость интерактивных элементов */
+.nav-link {
+    cursor: pointer !important;
+}
+
+.glass-card {
+    cursor: default !important;
+}
+
+/* Анимации частиц */
+.particle {
+    pointer-events: none !important;
+}
+
+/* Гарантируем что контейнеры существуют */
+.container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Улучшаем доступность */
+button:focus, 
+textarea:focus {
+    outline: 2px solid #0ea5e9 !important;
+    outline-offset: 2px !important;
+}
+.search-input:focus {
+    outline: none !important;
+    border-color: var(--primary-blue) !important;
+    box-shadow: 
+        0 0 0 3px rgba(14, 165, 233, 0.3),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+.search-btn:focus {
+    outline: none !important;
+    box-shadow: 
+        0 0 0 3px rgba(14, 165, 233, 0.5),
+        0 10px 25px rgba(14, 165, 233, 0.4) !important;
+}
+
+.example-chip:focus {
+    outline: none !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 
+        0 0 0 2px rgba(14, 165, 233, 0.5),
+        0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+.nav-link:focus {
+    outline: none !important;
+    color: var(--text-white) !important;
+    text-shadow: 0 0 8px rgba(14, 165, 233, 0.8) !important;
+}
+
+/* Убираем outline для всех интерактивных элементов */
+button:focus,
+a:focus,
+textarea:focus {
+    outline: none !important;
+}
+
+/* Красивые focus состояния для навигации */
+.header-content:focus-within {
+    border-color: rgba(14, 165, 233, 0.5) !important;
+}
+
+/* Улучшаем видимость без нарушения layout */
+.glass-card:focus-within {
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(14, 165, 233, 0.2) !important;
+}
+
+/* Специфичные стили для хедера */
+.header {
+    padding: 20px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    margin: 0 auto;
+    max-width: 1200px;
+    position: relative;
+    overflow: visible !important; /* Важно! */
+}
+
+/* Убираем любые внешние outline */
+*:focus {
+    outline: none !important;
+}
+
+/* Альтернатива для accessibility - внутренняя подсветка */
+.search-input:focus-visible {
+    border-color: var(--primary-blue) !important;
+    box-shadow: 
+        inset 0 0 0 2px var(--primary-blue),
+        0 0 20px rgba(14, 165, 233, 0.3) !important;
+}
+
+.search-btn:focus-visible {
+    box-shadow: 
+        inset 0 0 0 2px white,
+        0 10px 25px rgba(14, 165, 233, 0.4) !important;
+}
+
+/* Для пользователей с клавиатурой - более заметный индикатор */
+@media (prefers-reduced-motion: no-preference) {
+    .nav-link:focus-visible {
+        color: var(--text-white) !important;
+        background: rgba(14, 165, 233, 0.2) !important;
+        border-radius: 8px !important;
+        padding: 5px 10px !important;
+        margin: -5px -10px !important;
+    }
+}
+
+/* Гарантируем что контур не выходит за границы */
+.logo,
+.nav,
+.nav-link,
+.search-input,
+.search-btn,
+.example-chip {
+    position: relative;
+    z-index: 1;
+}
+
+/* Убираем стандартные браузерные стили */
+input:focus, textarea:focus, select:focus {
+    outline-offset: 0 !important;
+    outline: none !important;
+}
+
+/* Красивые кастомные фокусы */
+.focus-ring:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.5) !important;
+}
+.discord-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-gray);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    padding: 8px 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid transparent;
+}
+
+.discord-link:hover {
+    color: var(--text-white);
+    background: rgba(88, 101, 242, 0.2);
+    border-color: rgba(88, 101, 242, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(88, 101, 242, 0.3);
+}
+
+.discord-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.discord-link:hover .discord-icon {
+    color: #5865f2;
+    transform: scale(1.1);
+}
+
+.discord-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+/* Анимация пульсации для привлечения внимания */
+.discord-link {
+    animation: discord-pulse 3s ease-in-out infinite;
+}
+
+@keyframes discord-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(88, 101, 242, 0);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(88, 101, 242, 0.1);
+    }
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .discord-text {
+        display: none;
+    }
+    
+    .discord-link {
+        padding: 8px 12px;
+    }
+    
+    .nav {
+        gap: 15px;
+    }
+}
+
+/* Стили для фокуса (accessibility) */
+.discord-link:focus {
+    outline: none;
+    background: rgba(88, 101, 242, 0.3);
+    border-color: #5865f2;
+    box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.5);
+}
+
+/* Альтернативный вариант с иконкой Font Awesome */
+.discord-link.fa-icon {
+    font-family: 'Font Awesome 6 Brands';
+}
+
+.discord-link.fa-icon::before {
+    content: '\f392';
+    font-size: 1.2rem;
+}
+.discord-btn {
+    background: rgba(88, 101, 242, 0.1);
+    border-color: rgba(88, 101, 242, 0.3);
+    animation: discord-pulse 4s ease-in-out infinite;
+}
+
+.discord-btn:hover {
+    background: rgba(88, 101, 242, 0.2);
+    border-color: rgba(88, 101, 242, 0.5);
+    box-shadow: 0 8px 25px rgba(88, 101, 242, 0.3);
+}
+
+.discord-btn:hover .nav-icon {
+    color: #5865f2;
+    transform: scale(1.15);
+}
+
+/* Анимация пульсации для Discord */
+@keyframes discord-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(88, 101, 242, 0);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(88, 101, 242, 0.1);
+    }
+}
+.nav-btn.active {
+    color: var(--text-white);
+    background: rgba(14, 165, 233, 0.2);
+    border-color: rgba(14, 165, 233, 0.4);
+}
+
+/* Стили для фокуса (accessibility) */
+.nav-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.5);
+}
+
+.discord-btn:focus {
+    box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.5);
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .nav {
+        gap: 8px;
+    }
+    
+    .nav-btn {
+        padding: 10px 16px;
+        min-width: auto;
+    }
+    
+    .nav-text {
+        font-size: 0.85rem;
+    }
+    
+    .nav-icon {
+        width: 18px;
+        height: 18px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 640px) {
+    .nav-text {
+        display: none;
+    }
+    
+    .nav-btn {
+        padding: 12px;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        min-width: auto;
+    }
+    
+    .nav-icon {
+        margin: 0;
+    }
+}
+
+/* Логотип для балансировки */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    font-size: 2rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+.logo h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, #ffffff, #e0f2fe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Гарантируем симметричное расположение */
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+}
+
+/* Эффект свечения при наведении */
+.nav-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-btn:hover {
+    filter: brightness(1.2);
+}
+
+/* Индикатор текущей страницы */
+.nav-btn[href="#search"]:hover,
+.nav-btn[href="#about"]:hover {
+    background: rgba(14, 165, 233, 0.15);
+    border-color: rgba(14, 165, 233, 0.4);
+}
+.download-btn {
+    background: rgba(16, 185, 129, 0.1); /* Зеленый акцент */
+    border-color: rgba(16, 185, 129, 0.3);
+    animation: download-pulse 4s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.download-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.2), transparent);
+    transition: left 0.6s;
+}
+
+.download-btn:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    transform: translateY(-2px);
+}
+
+.download-btn:hover::before {
+    left: 100%;
+}
+
+.download-btn:hover .nav-icon {
+    color: #10b981;
+    transform: scale(1.15);
+    animation: download-bounce 0.5s ease;
+}
+
+/* Анимация пульсации для кнопки скачивания */
+@keyframes download-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.1);
+    }
+}
+
+/* Анимация скачивания */
+@keyframes download-bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0) scale(1.15);
+    }
+    40% {
+        transform: translateY(-5px) scale(1.2);
+    }
+    60% {
+        transform: translateY(-3px) scale(1.18);
+    }
+}
+
+/* Стили для фокуса */
+.download-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.5);
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .download-btn .nav-text {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .download-btn .nav-text {
+        display: none;
+    }
+    
+    .download-btn {
+        padding: 12px;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+    }
+}
+/* Стили для секции скачивания */
+.download-section {
+    padding: 60px 0;
+    position: relative;
+}
+
+.download-card {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 50px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.download-content {
+    color: white;
+}
+
+.download-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    animation: float 3s ease-in-out infinite;
+}
+
+.download-content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    background: linear-gradient(45deg, #10b981, #0ea5e9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.download-content p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+.download-features {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.download-features .feature {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.download-main-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(45deg, #10b981, #059669);
+    color: white;
+    text-decoration: none;
+    padding: 18px 35px;
+    border-radius: 25px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+    margin-bottom: 20px;
+}
+
+.download-main-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 15px 40px rgba(16, 185, 129, 0.6);
+}
+
+.btn-icon {
+    font-size: 1.4rem;
+    animation: download-shake 2s ease-in-out infinite;
+}
+
+.btn-size {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    font-weight: 400;
+}
+
+.download-info {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+.version, .platform {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 5px 15px;
+    border-radius: 15px;
+}
+
+@keyframes download-shake {
+    0%, 90%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    95% {
+        transform: translateY(-2px) rotate(10deg);
+    }
+}
+
+/* Адаптивность секции скачивания */
+@media (max-width: 768px) {
+    .download-card {
+        padding: 30px 20px;
+        margin: 0 20px;
+    }
+    
+    .download-content h2 {
+        font-size: 2rem;
+    }
+    
+    .download-features {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .download-main-btn {
+        padding: 15px 25px;
+        font-size: 1.1rem;
+    }
+}
+/* Добавьте в конец styles/style.css */
+.download-notification {
+    position: fixed;
+    top: 100px;
+    right: 30px;
+    background: rgba(16, 185, 129, 0.9);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    animation: slideInRight 0.5s ease, slideOutRight 0.5s ease 2.5s forwards;
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.notification-icon {
+    font-size: 1.2rem;
+    animation: bounce 1s ease infinite;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+/* Полностью замените стили хедера на эти */
+
+.header {
+    padding: 20px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    margin: 0 auto;
+    max-width: 1400px;
+    gap: 30px;
+}
+
+/* Навигация слева */
+.nav {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex: 1;
+}
+
+/* Логотип справа */
+.logo-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.logo-icon {
+    font-size: 2.2rem;
+    animation: float 3s ease-in-out infinite;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.logo-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    background: linear-gradient(45deg, #ffffff, #e0f2fe, #bae6fd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+}
+
+/* Единые стили для всех кнопок навигации */
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-gray);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    padding: 12px 20px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    min-width: 100px;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.6s;
+}
+
+.nav-btn:hover {
+    color: var(--text-white);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.nav-btn:hover::before {
+    left: 100%;
+}
+
+.nav-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 18px;
+}
+
+.nav-btn:hover .nav-icon {
+    transform: scale(1.1);
+}
+
+.nav-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Специфичные стили для Discord кнопки */
+.discord-btn {
+    background: rgba(88, 101, 242, 0.1);
+    border-color: rgba(88, 101, 242, 0.3);
+    animation: discord-pulse 4s ease-in-out infinite;
+}
+
+.discord-btn:hover {
+    background: rgba(88, 101, 242, 0.2);
+    border-color: rgba(88, 101, 242, 0.5);
+    box-shadow: 0 8px 25px rgba(88, 101, 242, 0.3);
+}
+
+.discord-btn:hover .nav-icon {
+    color: #5865f2;
+    transform: scale(1.15);
+}
+
+/* Стили для кнопки скачивания лаунчера */
+.download-btn {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+    animation: download-pulse 4s ease-in-out infinite;
+}
+
+.download-btn:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    transform: translateY(-2px);
+}
+
+.download-btn:hover .nav-icon {
+    color: #10b981;
+    transform: scale(1.15);
+    animation: download-bounce 0.5s ease;
+}
+
+/* Анимация пульсации для Discord */
+@keyframes discord-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(88, 101, 242, 0);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(88, 101, 242, 0.1);
+    }
+}
+
+/* Анимация пульсации для кнопки скачивания */
+@keyframes download-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.1);
+    }
+}
+
+/* Анимация скачивания */
+@keyframes download-bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0) scale(1.15);
+    }
+    40% {
+        transform: translateY(-5px) scale(1.2);
+    }
+    60% {
+        transform: translateY(-3px) scale(1.18);
+    }
+}
+
+/* Анимация логотипа */
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-5px) rotate(5deg); }
+}
+
+/* Стили для активной кнопки */
+.nav-btn.active {
+    color: var(--text-white);
+    background: rgba(14, 165, 233, 0.2);
+    border-color: rgba(14, 165, 233, 0.4);
+}
+
+/* Стили для фокуса */
+.nav-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.5);
+}
+
+.discord-btn:focus {
+    box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.5);
+}
+
+.download-btn:focus {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.5);
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .header-content {
+        padding: 15px 20px;
+        gap: 20px;
+    }
+    
+    .nav {
+        gap: 8px;
+    }
+    
+    .nav-btn {
+        padding: 10px 16px;
+        min-width: 90px;
+    }
+    
+    .logo-title {
+        font-size: 1.4rem;
+    }
+    
+    .logo-icon {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .nav {
+        order: 2;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .logo-right {
+        order: 1;
+        margin-left: 0;
+    }
+    
+    .nav-btn {
+        padding: 10px 14px;
+        min-width: 80px;
+    }
+    
+    .nav-text {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .nav-text {
+        display: none;
+    }
+    
+    .nav-btn {
+        padding: 12px;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        min-width: auto;
+    }
+    
+    .nav-icon {
+        margin: 0;
+    }
+    
+    .logo-title {
+        font-size: 1.3rem;
+    }
+    
+    .logo-icon {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav {
+        gap: 6px;
+    }
+    
+    .nav-btn {
+        width: 40px;
+        height: 40px;
+        padding: 10px;
+    }
+    
+    .logo-title {
+        font-size: 1.2rem;
+    }
+    
+    .logo-icon {
+        font-size: 1.6rem;
+    }
+}
+
+/* Гарантируем что логотип всегда виден */
+.logo-right {
+    flex-shrink: 0;
+}
+
+/* Эффект разделения */
+.header-content::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 1px;
+    height: 60%;
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent);
+    opacity: 0.5;
+}
+
+/* Убираем разделитель на мобильных */
+@media (max-width: 768px) {
+    .header-content::before {
+        display: none;
+    }
+}
+.header {
+    padding: 20px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    margin: 0 auto;
+    max-width: 1400px;
+    gap: 30px;
+}
+
+/* Логотип слева */
+.logo-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.logo-icon {
+    font-size: 2.2rem;
+    animation: float 3s ease-in-out infinite;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.logo-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    background: linear-gradient(45deg, #ffffff, #e0f2fe, #bae6fd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+}
+
+/* Навигация справа */
+.nav {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+/* Единые стили для всех кнопок навигации */
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-gray);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    padding: 12px 20px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    min-width: 100px;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer; /* Важно! */
+}
+
+.nav-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.6s;
+}
+
+.nav-btn:hover {
+    color: var(--text-white);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.nav-btn:hover::before {
+    left: 100%;
+}
+
+.nav-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 18px;
+}
+
+.nav-btn:hover .nav-icon {
+    transform: scale(1.1);
+}
+
+.nav-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Специфичные стили для Discord кнопки */
+.discord-btn {
+    background: rgba(88, 101, 242, 0.1);
+    border-color: rgba(88, 101, 242, 0.3);
+    animation: discord-pulse 4s ease-in-out infinite;
+}
+
+.discord-btn:hover {
+    background: rgba(88, 101, 242, 0.2);
+    border-color: rgba(88, 101, 242, 0.5);
+    box-shadow: 0 8px 25px rgba(88, 101, 242, 0.3);
+}
+
+.discord-btn:hover .nav-icon {
+    color: #5865f2;
+    transform: scale(1.15);
+}
+
+/* Стили для кнопки скачивания лаунчера */
+.download-btn {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+    animation: download-pulse 4s ease-in-out infinite;
+}
+
+.download-btn:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    transform: translateY(-2px);
+}
+
+.download-btn:hover .nav-icon {
+    color: #10b981;
+    transform: scale(1.15);
+    animation: download-bounce 0.5s ease;
+}
+
+/* Анимации */
+@keyframes discord-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(88, 101, 242, 0);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(88, 101, 242, 0.1);
+    }
+}
+
+@keyframes download-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.1);
+    }
+}
+
+@keyframes download-bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0) scale(1.15);
+    }
+    40% {
+        transform: translateY(-5px) scale(1.2);
+    }
+    60% {
+        transform: translateY(-3px) scale(1.18);
+    }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-5px) rotate(5deg); }
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .header-content {
+        padding: 15px 20px;
+        gap: 20px;
+    }
+    
+    .nav {
+        gap: 8px;
+    }
+    
+    .nav-btn {
+        padding: 10px 16px;
+        min-width: 90px;
+    }
+    
+    .logo-title {
+        font-size: 1.4rem;
+    }
+    
+    .logo-icon {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .nav {
+        order: 2;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .logo-left {
+        order: 1;
+    }
+    
+    .nav-btn {
+        padding: 10px 14px;
+        min-width: 80px;
+    }
+    
+    .nav-text {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .nav-text {
+        display: none;
+    }
+    
+    .nav-btn {
+        padding: 12px;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        min-width: auto;
+    }
+    
+    .nav-icon {
+        margin: 0;
+    }
+    
+    .logo-title {
+        font-size: 1.3rem;
+    }
+    
+    .logo-icon {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav {
+        gap: 6px;
+    }
+    
+    .nav-btn {
+        width: 40px;
+        height: 40px;
+        padding: 10px;
+    }
+    
+    .logo-title {
+        font-size: 1.2rem;
+    }
+    
+    .logo-icon {
+        font-size: 1.6rem;
+    }
+}
