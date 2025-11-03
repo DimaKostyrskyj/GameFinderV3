@@ -10,11 +10,13 @@ class GameFinderApp {
         this.priceAPI = window.priceAPI;
         this.initApp();
     }
+    
 
     initApp() {
         try {
             this.initDOMElements();
             this.initEventListeners();
+            this.initCurrencyDropdown();
             this.createParticles();
             this.setupNavigation();
             this.setupDownloadTracking();
@@ -31,15 +33,13 @@ class GameFinderApp {
         this.gamesContainer = document.getElementById('gamesContainer');
         this.analysisContent = document.getElementById('aiAnalysis');
         this.exampleChips = document.querySelectorAll('.example-chip');
-        this.currencySelect = document.getElementById('currencySelect');
 
         console.log('📝 DOM elements loaded:', {
             searchInput: !!this.searchInput,
             searchBtn: !!this.searchBtn,
             resultsSection: !!this.resultsSection,
             gamesContainer: !!this.gamesContainer,
-            exampleChips: this.exampleChips.length,
-            currencySelect: !!this.currencySelect
+            exampleChips: this.exampleChips.length
         });
     }
 
@@ -75,20 +75,87 @@ class GameFinderApp {
             });
         }
 
-        // Выбор валюты
-        if (this.currencySelect) {
-            this.currencySelect.addEventListener('change', (e) => {
-                this.changeCurrency(e.target.value);
-            });
-            // Установите сохраненную валюту
-            const savedCurrency = this.priceAPI.getSavedCurrency();
-            if (savedCurrency) {
-                this.currencySelect.value = savedCurrency;
-            }
-        }
-
         console.log('🎯 Event listeners attached');
     }
+
+    initCurrencyDropdown() {
+    const currencyToggle = document.getElementById('currencyToggle');
+    const currencyMenu = document.querySelector('.currency-dropdown-menu');
+    const currencyOptions = document.querySelectorAll('.currency-option');
+    const currentCurrencySymbol = document.getElementById('currentCurrencySymbol');
+    
+    if (currencyToggle && currencyMenu) {
+        // Обработчик открытия/закрытия меню
+        currencyToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            currencyMenu.classList.toggle('show');
+            currencyToggle.classList.toggle('active');
+        });
+        
+        // Обработчик выбора валюты
+        currencyOptions.forEach(option => {
+            option.addEventListener('click', (e) => {
+                const currency = option.getAttribute('data-currency');
+                const symbol = option.querySelector('.currency-symbol').textContent;
+                
+                this.changeCurrency(currency);
+                
+                // Обновляем отображение
+                currentCurrencySymbol.textContent = symbol;
+                
+                // Обновляем активный класс
+                currencyOptions.forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                
+                // Закрываем меню
+                currencyMenu.classList.remove('show');
+                currencyToggle.classList.remove('active');
+                
+                // Эффект смены валюты
+                currencyToggle.classList.add('currency-spin');
+                setTimeout(() => {
+                    currencyToggle.classList.remove('currency-spin');
+                }, 600);
+            });
+        });
+        
+        // Закрытие при клике вне меню
+        document.addEventListener('click', (e) => {
+            if (!currencyToggle.contains(e.target) && !currencyMenu.contains(e.target)) {
+                currencyMenu.classList.remove('show');
+                currencyToggle.classList.remove('active');
+            }
+        });
+        
+        // Инициализация текущей валюты
+        this.initCurrentCurrency();
+    }
+}
+
+initCurrentCurrency() {
+    const savedCurrency = this.priceAPI.getSavedCurrency() || 'USD';
+    const currencyOptions = document.querySelectorAll('.currency-option');
+    const currentCurrencySymbol = document.getElementById('currentCurrencySymbol');
+    
+    currencyOptions.forEach(option => {
+        if (option.getAttribute('data-currency') === savedCurrency) {
+            option.classList.add('active');
+            const symbol = option.querySelector('.currency-symbol').textContent;
+            currentCurrencySymbol.textContent = symbol;
+        }
+    });
+    
+    // Добавляем пульсацию для привлечения внимания
+    setTimeout(() => {
+        const currencyToggle = document.getElementById('currencyToggle');
+        if (currencyToggle) {
+            currencyToggle.classList.add('pulse');
+            setTimeout(() => {
+                currencyToggle.classList.remove('pulse');
+            }, 6000);
+        }
+    }, 2000);
+}
 
     autoResizeTextarea() {
         this.style.height = 'auto';
@@ -230,7 +297,6 @@ class GameFinderApp {
         this.initStoreButtons();
     }
 
-    // Новая функция для инициализации кнопок магазинов
     initStoreButtons() {
         const storeButtons = document.querySelectorAll('.store-btn');
         
@@ -243,136 +309,200 @@ class GameFinderApp {
         });
     }
 
-    // Обработчик клика по магазину
     async handleStoreClick(store, gameName, button) {
-        // Убираем активный класс у всех кнопок в этой карточке
-        const allButtons = button.parentElement.querySelectorAll('.store-btn');
-        allButtons.forEach(btn => btn.classList.remove('active'));
-        
-        // Добавляем активный класс к нажатой кнопке
-        button.classList.add('active');
-        
-        // Показываем загрузку
-        const priceInfo = document.getElementById(`price-${gameName.replace(/\s+/g, '-').toLowerCase()}`);
-        priceInfo.innerHTML = '<p class="price-loading">Загрузка цены...</p>';
-        
-        try {
-            const price = await this.fetchGamePrice(gameName, store);
-            this.displayPrice(price, store, gameName, priceInfo);
-        } catch (error) {
-            console.error('Error fetching price:', error);
-            priceInfo.innerHTML = '<p class="price-error">Цена не найдена</p>';
-        }
+    // Убираем активный класс у всех кнопок в этой карточке
+    const allButtons = button.parentElement.querySelectorAll('.store-btn');
+    allButtons.forEach(btn => btn.classList.remove('active'));
+    
+    // Добавляем активный класс к нажатой кнопке
+    button.classList.add('active');
+    
+    // Показываем загрузку
+    const priceInfo = document.getElementById(`price-${gameName.replace(/\s+/g, '-').toLowerCase()}`);
+    priceInfo.innerHTML = '<p class="price-loading">🔄 Запрашиваем актуальную цену...</p>';
+    
+    try {
+        const price = await this.fetchGamePrice(gameName, store);
+        this.displayPrice(price, store, gameName, priceInfo);
+    } catch (error) {
+        console.error('Error fetching price:', error);
+        priceInfo.innerHTML = `
+            <div class="price-error">
+                <p>❌ Не удалось получить цену</p>
+                <p class="price-error-detail">${error.message}</p>
+            </div>
+        `;
     }
+}
 
-    // Функция для получения реальной цены
     async fetchGamePrice(gameName, store) {
-        try {
-            let priceData;
-            
-            switch(store) {
-                case 'steam':
-                    priceData = await this.priceAPI.getSteamPrice(gameName);
-                    break;
-                case 'epic':
-                    priceData = await this.priceAPI.getEpicPrice(gameName);
-                    break;
-                case 'xbox':
-                    priceData = await this.priceAPI.getXboxPrice(gameName);
-                    break;
-                case 'ea':
-                case 'ubisoft':
-                    priceData = this.priceAPI.getFallbackPrice(store);
-                    break;
-                default:
-                    priceData = this.priceAPI.getFallbackPrice('steam');
-            }
-            
-            return priceData;
-        } catch (error) {
-            console.error('Price fetch error:', error);
-            return this.priceAPI.getFallbackPrice(store);
+    try {
+        if (!window.priceAPI) {
+            throw new Error('PriceAPI not available');
         }
+        
+        let priceData;
+        
+        switch(store) {
+            case 'steam':
+                priceData = await window.priceAPI.getSteamPrice(gameName);
+                break;
+            case 'epic':
+                priceData = await window.priceAPI.getEpicPrice(gameName);
+                break;
+            case 'xbox':
+                priceData = await window.priceAPI.getXboxPrice(gameName);
+                break;
+            case 'ea':
+                priceData = await window.priceAPI.getEAPrice(gameName);
+                break;
+            case 'ubisoft':
+                priceData = await window.priceAPI.getUbisoftPrice(gameName);
+                break;
+            default:
+                throw new Error(`Unknown store: ${store}`);
+        }
+        
+        return priceData;
+        
+    } catch (error) {
+        console.error('Price fetch error:', error);
+        throw error;
     }
+}
 
-    // Функция для отображения цены
     displayPrice(priceData, store, gameName, priceElement) {
-        if (!priceData) {
-            priceElement.innerHTML = '<p class="price-error">Ошибка загрузки цены</p>';
-            return;
-        }
+    const storeNames = {
+        'steam': 'Steam',
+        'epic': 'Epic Games', 
+        'xbox': 'Microsoft Store',
+        'ea': 'EA App',
+        'ubisoft': 'Ubisoft Store'
+    };
 
-        const storeNames = {
-            'steam': 'Steam',
-            'epic': 'Epic Games', 
-            'xbox': 'Microsoft Store',
-            'ea': 'EA App',
-            'ubisoft': 'Ubisoft Store'
-        };
-
-        if (priceData.price === null) {
-            priceElement.innerHTML = `
-                <div class="price-unavailable">
-                    <p>Игра не найдена в ${storeNames[store]}</p>
-                </div>
-            `;
-        } else {
-            const formattedPrice = this.priceAPI.formatPrice(priceData.price, priceData.currency);
-            const formattedOriginal = priceData.originalPrice ? 
-                this.priceAPI.formatPrice(priceData.originalPrice, priceData.currency) : null;
-            
-            const saving = priceData.originalPrice ? 
-                priceData.originalPrice - priceData.price : 0;
-            const formattedSaving = this.priceAPI.formatPrice(saving, priceData.currency);
-
-            priceElement.innerHTML = `
-                <div class="price-success">
-                    <div class="price-discounted">
-                        ${formattedOriginal ? `
-                            <span class="original-price">${formattedOriginal}</span>
-                        ` : ''}
-                        <span class="current-price">${formattedPrice}</span>
-                        ${priceData.discount ? `
-                            <span class="discount-badge">-${priceData.discount}%</span>
-                        ` : ''}
-                    </div>
-                    ${saving > 0 ? `
-                        <div class="price-saving">Экономия: ${formattedSaving}</div>
-                    ` : ''}
-                    <div class="price-store">в ${storeNames[store]}</div>
-                    <button class="buy-btn" onclick="window.openStore('${store}', '${gameName}')">
-                        Купить сейчас
+    // Если произошла ошибка
+    if (!priceData) {
+        priceElement.innerHTML = `
+            <div class="price-error">
+                <p>❌ Ошибка получения цены</p>
+                <p class="price-error-detail">Попробуйте другой магазин</p>
+                <div class="price-actions">
+                    <button class="visit-page-btn" onclick="window.openStore('${store}', '${gameName}')">
+                        Перейти на страницу товара
                     </button>
                 </div>
-            `;
-        }
+            </div>
+        `;
+        return;
     }
 
-    // Функция смены валюты
+    // Если игра бесплатная
+    if (priceData.price === 0) {
+        priceElement.innerHTML = `
+            <div class="price-success">
+                <div class="price-discounted">
+                    <span class="current-price free">Бесплатно</span>
+                </div>
+                <div class="price-store">в ${storeNames[store]}</div>
+                <div class="ai-confidence">🤖 AI уверенность: ${priceData.confidence}/10</div>
+                <div class="price-actions">
+                    <button class="visit-page-btn" onclick="window.openStore('${store}', '${gameName}')">
+                        Перейти на страницу
+                    </button>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    // Если есть цена
+    const formattedPrice = this.priceAPI.formatPrice(priceData.price, priceData.currency);
+    const formattedOriginal = priceData.originalPrice ? 
+        this.priceAPI.formatPrice(priceData.originalPrice, priceData.currency) : null;
+    
+    const saving = priceData.originalPrice ? 
+        priceData.originalPrice - priceData.price : 0;
+    const formattedSaving = this.priceAPI.formatPrice(saving, priceData.currency);
+
+    priceElement.innerHTML = `
+        <div class="price-success">
+            <div class="price-discounted">
+                ${formattedOriginal ? `
+                    <span class="original-price">${formattedOriginal}</span>
+                ` : ''}
+                <span class="current-price">${formattedPrice}</span>
+                ${priceData.discount ? `
+                    <span class="discount-badge">-${priceData.discount}%</span>
+                ` : ''}
+            </div>
+            ${saving > 0 ? `
+                <div class="price-saving">Экономия: ${formattedSaving}</div>
+            ` : ''}
+            <div class="price-store">в ${storeNames[store]}</div>
+            <div class="ai-confidence">🤖 AI уверенность: ${priceData.confidence}/10</div>
+            <div class="price-actions">
+                <button class="buy-btn" onclick="window.openStore('${store}', '${gameName}')">
+                    Купить сейчас
+                </button>
+                <button class="visit-page-btn" onclick="window.openStore('${store}', '${gameName}')">
+                    Перейти на страницу
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// В методе handleStoreClick улучшите обработку ошибок:
+async handleStoreClick(store, gameName, button) {
+    // Убираем активный класс у всех кнопок в этой карточке
+    const allButtons = button.parentElement.querySelectorAll('.store-btn');
+    allButtons.forEach(btn => btn.classList.remove('active'));
+    
+    // Добавляем активный класс к нажатой кнопке
+    button.classList.add('active');
+    
+    // Показываем загрузку
+    const priceInfo = document.getElementById(`price-${gameName.replace(/\s+/g, '-').toLowerCase()}`);
+    priceInfo.innerHTML = '<p class="price-loading">🔄 AI ищет актуальную цену...</p>';
+    
+    try {
+        const price = await this.fetchGamePrice(gameName, store);
+        this.displayPrice(price, store, gameName, priceInfo);
+    } catch (error) {
+        console.error('Price fetch error:', error);
+        
+        let errorMessage = 'Не удалось получить цену';
+        if (error.message.includes('JSON') || error.message.includes('парсинга')) {
+            errorMessage = 'Ошибка обработки данных AI';
+        } else if (error.message.includes('API')) {
+            errorMessage = 'Ошибка подключения к AI';
+        }
+        
+        priceInfo.innerHTML = `
+            <div class="price-error">
+                <p>❌ ${errorMessage}</p>
+                <p class="price-error-detail">Но вы все равно можете посмотреть игру в магазине</p>
+                <div class="price-actions">
+                    <button class="visit-page-btn" onclick="window.openStore('${store}', '${gameName}')">
+                        Перейти на страницу товара
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+}
+
+
     async changeCurrency(currency) {
         this.priceAPI.setCurrency(currency);
         
         // Перезагружаем цены для всех открытых карточек
         const activeStoreButtons = document.querySelectorAll('.store-btn.active');
-        activeStoreButtons.forEach(button => {
+        for (const button of activeStoreButtons) {
             const store = button.getAttribute('data-store');
             const gameName = button.getAttribute('data-game');
-            this.handleStoreClick(store, gameName, button);
-        });
-    }
-
-    // Функция для получения URL магазина
-    getStoreUrl(store, gameName) {
-        const encodedName = encodeURIComponent(gameName);
-        const storeUrls = {
-            'steam': `https://store.steampowered.com/search/?term=${encodedName}`,
-            'epic': `https://store.epicgames.com/ru/browse?q=${encodedName}`,
-            'xbox': `https://www.xbox.com/ru-ru/search?q=${encodedName}`,
-            'ea': `https://www.ea.com/ru-ru/search?q=${encodedName}`,
-            'ubisoft': `https://store.ubi.com/ru/search/?q=${encodedName}`
-        };
-        
-        return storeUrls[store] || '#';
+            await this.handleStoreClick(store, gameName, button);
+        }
     }
 
     showStats(gameCount) {
@@ -506,9 +636,7 @@ function initializeApp() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('📄 DOM fully loaded');
     
-    // Пытаемся инициализировать сразу
     if (!initializeApp()) {
-        // Если не получилось, пробуем еще раз через короткое время
         setTimeout(() => {
             if (!initializeApp()) {
                 console.error('❌ Failed to initialize GameFinderApp after retry');
@@ -516,62 +644,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 500);
     }
 });
-
-// Глобальные стили для анимаций
-const globalStyles = `
-    @keyframes floatParticle {
-        0%, 100% { transform: translate(0, 0) rotate(0deg); opacity: 0.3; }
-        25% { transform: translate(10vw, -10vh) rotate(90deg); opacity: 0.6; }
-        50% { transform: translate(20vw, 5vh) rotate(180deg); opacity: 0.3; }
-        75% { transform: translate(-10vw, 15vh) rotate(270deg); opacity: 0.6; }
-    }
-    
-    .error-message {
-        background: rgba(239, 68, 68, 0.9) !important;
-        color: white !important;
-        padding: 15px 20px !important;
-        border-radius: 10px !important;
-        margin: 15px 0 !important;
-        text-align: center !important;
-        animation: fadeInUp 0.3s ease !important;
-        border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    }
-    
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .download-notification {
-        position: fixed;
-        top: 100px;
-        right: 30px;
-        background: rgba(16, 185, 129, 0.9);
-        color: white;
-        padding: 15px 20px;
-        border-radius: 15px;
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        z-index: 10000;
-        animation: slideInRight 0.5s ease, slideOutRight 0.5s ease 2.5s forwards;
-    }
-    
-    @keyframes slideInRight {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    
-    @keyframes slideOutRight {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-    }
-`;
-
-// Добавляем глобальные стили
-const styleSheet = document.createElement('style');
-styleSheet.textContent = globalStyles;
-document.head.appendChild(styleSheet);
 
 // Глобальная функция для открытия магазинов
 window.openStore = function(store, gameName) {

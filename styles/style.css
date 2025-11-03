@@ -1268,50 +1268,38 @@ input:focus, textarea:focus, select:focus {
     font-size: 1.2rem;
     font-weight: 600;
     transition: all 0.3s ease;
-    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
-    margin-bottom: 20px;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .download-main-btn:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 15px 40px rgba(16, 185, 129, 0.6);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
+    background: linear-gradient(45deg, #059669, #047857);
 }
 
-.btn-icon {
+.download-main-btn i {
     font-size: 1.4rem;
-    animation: download-shake 2s ease-in-out infinite;
+    transition: transform 0.3s ease;
 }
 
-.btn-size {
-    font-size: 0.9rem;
-    opacity: 0.8;
-    font-weight: 400;
+.download-main-btn:hover i {
+    transform: translateY(2px);
 }
 
 .download-info {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
+    margin-top: 25px;
     font-size: 0.9rem;
-    opacity: 0.7;
+    opacity: 0.8;
 }
 
-.version, .platform {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 5px 15px;
-    border-radius: 15px;
+/* Анимация появления */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
 }
 
-@keyframes download-shake {
-    0%, 90%, 100% {
-        transform: translateY(0) rotate(0deg);
-    }
-    95% {
-        transform: translateY(-2px) rotate(10deg);
-    }
-}
-
-/* Адаптивность секции скачивания */
+/* Адаптивность */
 @media (max-width: 768px) {
     .download-card {
         padding: 30px 20px;
@@ -1323,8 +1311,12 @@ input:focus, textarea:focus, select:focus {
     }
     
     .download-features {
-        flex-direction: column;
-        align-items: center;
+        gap: 10px;
+    }
+    
+    .download-features .feature {
+        padding: 8px 15px;
+        font-size: 0.8rem;
     }
     
     .download-main-btn {
@@ -1332,680 +1324,636 @@ input:focus, textarea:focus, select:focus {
         font-size: 1.1rem;
     }
 }
-/* Добавьте в конец styles/style.css */
-.download-notification {
-    position: fixed;
-    top: 100px;
-    right: 30px;
-    background: rgba(16, 185, 129, 0.9);
-    color: white;
-    padding: 15px 20px;
-    border-radius: 15px;
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    z-index: 10000;
-    animation: slideInRight 0.5s ease, slideOutRight 0.5s ease 2.5s forwards;
-}
-
-.notification-content {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-}
-
-.notification-icon {
-    font-size: 1.2rem;
-    animation: bounce 1s ease infinite;
-}
-
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-@keyframes slideOutRight {
-    from {
-        transform: translateX(0);
-        opacity: 1;
-    }
-    to {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-}
-/* Полностью замените стили хедера на эти */
-
-.header {
-    padding: 20px 0;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-}
-
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 30px;
-    margin: 0 auto;
-    max-width: 1400px;
-    gap: 30px;
-}
-
-/* Навигация слева */
-.nav {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex: 1;
-}
-
-/* Логотип справа */
-.logo-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-left: auto;
-}
-
-.logo-icon {
-    font-size: 2.2rem;
-    animation: float 3s ease-in-out infinite;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-}
-
-.logo-title {
-    font-size: 1.6rem;
-    font-weight: 800;
-    background: linear-gradient(45deg, #ffffff, #e0f2fe, #bae6fd);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    letter-spacing: -0.5px;
-    white-space: nowrap;
-}
-
-/* Единые стили для всех кнопок навигации */
-.nav-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text-gray);
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    padding: 12px 20px;
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1.5px solid rgba(255, 255, 255, 0.15);
-    min-width: 100px;
-    justify-content: center;
+/* Стили для кнопки смены валюты */
+.currency-btn {
+    background: rgba(255, 193, 7, 0.1); /* Золотой акцент */
+    border-color: rgba(255, 193, 7, 0.3);
     position: relative;
     overflow: hidden;
+    margin-left: auto; /* Это сдвигает кнопку максимально вправо */
 }
 
-.nav-btn::before {
+.currency-btn::before {
     content: '';
     position: absolute;
     top: 0;
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 193, 7, 0.2), transparent);
     transition: left 0.6s;
 }
 
-.nav-btn:hover {
-    color: var(--text-white);
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
+.currency-btn:hover {
+    background: rgba(255, 193, 7, 0.2);
+    border-color: rgba(255, 193, 7, 0.5);
+    box-shadow: 0 8px 25px rgba(255, 193, 7, 0.3);
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-.nav-btn:hover::before {
+.currency-btn:hover::before {
     left: 100%;
 }
 
-.nav-icon {
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    font-size: 18px;
-}
-
-.nav-btn:hover .nav-icon {
-    transform: scale(1.1);
-}
-
-.nav-text {
-    font-size: 0.95rem;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-/* Специфичные стили для Discord кнопки */
-.discord-btn {
-    background: rgba(88, 101, 242, 0.1);
-    border-color: rgba(88, 101, 242, 0.3);
-    animation: discord-pulse 4s ease-in-out infinite;
-}
-
-.discord-btn:hover {
-    background: rgba(88, 101, 242, 0.2);
-    border-color: rgba(88, 101, 242, 0.5);
-    box-shadow: 0 8px 25px rgba(88, 101, 242, 0.3);
-}
-
-.discord-btn:hover .nav-icon {
-    color: #5865f2;
+.currency-btn:hover .nav-icon {
+    color: #ffc107;
     transform: scale(1.15);
 }
 
-/* Стили для кнопки скачивания лаунчера */
-.download-btn {
-    background: rgba(16, 185, 129, 0.1);
-    border-color: rgba(16, 185, 129, 0.3);
-    animation: download-pulse 4s ease-in-out infinite;
-}
-
-.download-btn:hover {
-    background: rgba(16, 185, 129, 0.2);
-    border-color: rgba(16, 185, 129, 0.5);
-    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
-    transform: translateY(-2px);
-}
-
-.download-btn:hover .nav-icon {
-    color: #10b981;
-    transform: scale(1.15);
-    animation: download-bounce 0.5s ease;
-}
-
-/* Анимация пульсации для Discord */
-@keyframes discord-pulse {
+/* Анимация пульсации для кнопки валюты */
+@keyframes currency-pulse {
     0%, 100% {
-        box-shadow: 0 0 0 0 rgba(88, 101, 242, 0);
+        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
     }
     50% {
-        box-shadow: 0 0 0 6px rgba(88, 101, 242, 0.1);
+        box-shadow: 0 0 0 6px rgba(255, 193, 7, 0.1);
     }
 }
 
-/* Анимация пульсации для кнопки скачивания */
-@keyframes download-pulse {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-    }
-    50% {
-        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.1);
-    }
-}
-
-/* Анимация скачивания */
-@keyframes download-bounce {
-    0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0) scale(1.15);
-    }
-    40% {
-        transform: translateY(-5px) scale(1.2);
-    }
-    60% {
-        transform: translateY(-3px) scale(1.18);
-    }
-}
-
-/* Анимация логотипа */
-@keyframes float {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-5px) rotate(5deg); }
-}
-
-/* Стили для активной кнопки */
-.nav-btn.active {
-    color: var(--text-white);
-    background: rgba(14, 165, 233, 0.2);
-    border-color: rgba(14, 165, 233, 0.4);
+.currency-btn {
+    animation: currency-pulse 4s ease-in-out infinite;
 }
 
 /* Стили для фокуса */
-.nav-btn:focus {
+.currency-btn:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.5);
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.5);
 }
 
-.discord-btn:focus {
-    box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.5);
-}
-
-.download-btn:focus {
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.5);
-}
-
-/* Адаптивность */
-@media (max-width: 1024px) {
-    .header-content {
-        padding: 15px 20px;
-        gap: 20px;
-    }
-    
-    .nav {
-        gap: 8px;
-    }
-    
-    .nav-btn {
-        padding: 10px 16px;
-        min-width: 90px;
-    }
-    
-    .logo-title {
-        font-size: 1.4rem;
-    }
-    
-    .logo-icon {
-        font-size: 2rem;
-    }
-}
-
+/* Адаптивность для мобильных */
 @media (max-width: 768px) {
-    .header-content {
-        flex-direction: column;
-        gap: 15px;
-        padding: 15px;
-    }
-    
-    .nav {
-        order: 2;
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .logo-right {
-        order: 1;
-        margin-left: 0;
-    }
-    
-    .nav-btn {
-        padding: 10px 14px;
-        min-width: 80px;
-    }
-    
-    .nav-text {
+    .currency-btn .nav-text {
         font-size: 0.85rem;
     }
 }
 
 @media (max-width: 640px) {
-    .nav-text {
+    .currency-btn .nav-text {
         display: none;
     }
     
-    .nav-btn {
+    .currency-btn {
         padding: 12px;
         border-radius: 50%;
         width: 44px;
         height: 44px;
-        min-width: auto;
-    }
-    
-    .nav-icon {
-        margin: 0;
-    }
-    
-    .logo-title {
-        font-size: 1.3rem;
-    }
-    
-    .logo-icon {
-        font-size: 1.8rem;
     }
 }
 
-@media (max-width: 480px) {
-    .nav {
-        gap: 6px;
-    }
-    
-    .nav-btn {
-        width: 40px;
-        height: 40px;
-        padding: 10px;
-    }
-    
-    .logo-title {
-        font-size: 1.2rem;
-    }
-    
-    .logo-icon {
-        font-size: 1.6rem;
-    }
+/* Обновляем структуру навигации для правильного позиционирования */
+.nav {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-left: auto; /* Это гарантирует что все кнопки будут справа */
 }
 
-/* Гарантируем что логотип всегда виден */
-.logo-right {
-    flex-shrink: 0;
-}
-
-/* Эффект разделения */
-.header-content::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 1px;
-    height: 60%;
-    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent);
-    opacity: 0.5;
-}
-
-/* Убираем разделитель на мобильных */
-@media (max-width: 768px) {
-    .header-content::before {
-        display: none;
-    }
-}
-.header {
-    padding: 20px 0;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-}
-
+/* Специфичные стили для хедера */
 .header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 15px 30px;
-    margin: 0 auto;
-    max-width: 1400px;
-    gap: 30px;
 }
 
-/* Логотип слева */
-.logo-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-shrink: 0;
-}
-
-.logo-icon {
-    font-size: 2.2rem;
-    animation: float 3s ease-in-out infinite;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-}
-
-.logo-title {
-    font-size: 1.6rem;
-    font-weight: 800;
-    background: linear-gradient(45deg, #ffffff, #e0f2fe, #bae6fd);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    letter-spacing: -0.5px;
-    white-space: nowrap;
-}
-
-/* Навигация справа */
+/* Гарантируем что кнопка валюты всегда справа */
 .nav {
     display: flex;
     gap: 12px;
     align-items: center;
-    justify-content: flex-end;
-    flex-wrap: wrap;
+    margin-left: auto;
 }
 
-/* Единые стили для всех кнопок навигации */
-.nav-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text-gray);
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    padding: 12px 20px;
+/* Убедимся что лого остается слева */
+.logo {
+    margin-right: auto;
+}
+/* Компактный выбор валюты прямо в углу */
+.currency-corner {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1001;
+}
+
+.currency-compact-btn {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(30px);
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
     border-radius: 16px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1.5px solid rgba(255, 255, 255, 0.15);
-    min-width: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
-    cursor: pointer; /* Важно! */
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
 }
 
-.nav-btn::before {
+.currency-compact-btn::before {
     content: '';
     position: absolute;
     top: 0;
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.6s;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+    transition: left 0.7s;
 }
 
-.nav-btn:hover {
-    color: var(--text-white);
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.nav-btn:hover::before {
+.currency-compact-btn:hover::before {
     left: 100%;
 }
 
-.nav-icon {
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.currency-compact-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px) scale(1.1);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35);
+}
+
+.currency-compact-btn.active {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.3), rgba(139, 92, 246, 0.3));
+    border-color: rgba(14, 165, 233, 0.6);
+    box-shadow: 0 20px 40px rgba(14, 165, 233, 0.3);
+}
+
+.currency-compact-icon {
+    font-size: 1.2rem;
+    margin-bottom: 1px;
+    filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.4));
+    transition: transform 0.3s ease;
+}
+
+.currency-compact-btn:hover .currency-compact-icon {
+    transform: scale(1.15);
+}
+
+.currency-compact-symbol {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-white);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     transition: all 0.3s ease;
-    font-size: 18px;
 }
 
-.nav-btn:hover .nav-icon {
-    transform: scale(1.1);
-}
-
-.nav-text {
-    font-size: 0.95rem;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-/* Специфичные стили для Discord кнопки */
-.discord-btn {
-    background: rgba(88, 101, 242, 0.1);
-    border-color: rgba(88, 101, 242, 0.3);
-    animation: discord-pulse 4s ease-in-out infinite;
-}
-
-.discord-btn:hover {
-    background: rgba(88, 101, 242, 0.2);
-    border-color: rgba(88, 101, 242, 0.5);
-    box-shadow: 0 8px 25px rgba(88, 101, 242, 0.3);
-}
-
-.discord-btn:hover .nav-icon {
-    color: #5865f2;
+.currency-compact-btn:hover .currency-compact-symbol {
     transform: scale(1.15);
 }
 
-/* Стили для кнопки скачивания лаунчера */
-.download-btn {
-    background: rgba(16, 185, 129, 0.1);
-    border-color: rgba(16, 185, 129, 0.3);
-    animation: download-pulse 4s ease-in-out infinite;
+/* Компактное выпадающее меню - из угла */
+.currency-dropdown-menu.compact {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 16px;
+    margin-top: 15px;
+    min-width: 150px;
+    z-index: 1000;
+    box-shadow: 0 35px 70px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.download-btn:hover {
-    background: rgba(16, 185, 129, 0.2);
-    border-color: rgba(16, 185, 129, 0.5);
-    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
-    transform: translateY(-2px);
+.currency-dropdown-menu.compact.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
 }
 
-.download-btn:hover .nav-icon {
-    color: #10b981;
-    transform: scale(1.15);
-    animation: download-bounce 0.5s ease;
+.currency-dropdown-menu.compact .currency-options {
+    gap: 8px;
 }
 
-/* Анимации */
-@keyframes discord-pulse {
+.currency-dropdown-menu.compact .currency-option {
+    padding: 12px 14px;
+    border-radius: 14px;
+    gap: 10px;
+    border: 1px solid transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.currency-dropdown-menu.compact .currency-option:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: translateX(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.currency-dropdown-menu.compact .currency-option.active {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.35), rgba(139, 92, 246, 0.35));
+    border-color: rgba(14, 165, 233, 0.7);
+    box-shadow: 0 8px 25px rgba(14, 165, 233, 0.35);
+}
+
+.currency-dropdown-menu.compact .currency-text {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-white);
+}
+
+.currency-dropdown-menu.compact .currency-symbol {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #51cf66;
+}
+
+.currency-dropdown-menu.compact .currency-flag {
+    font-size: 1.3rem;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
+}
+
+/* Эффект пульсации */
+@keyframes currencyPulse {
     0%, 100% {
-        box-shadow: 0 0 0 0 rgba(88, 101, 242, 0);
+        box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.6);
     }
     50% {
-        box-shadow: 0 0 0 6px rgba(88, 101, 242, 0.1);
+        box-shadow: 0 0 0 15px rgba(14, 165, 233, 0);
     }
 }
 
-@keyframes download-pulse {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+.currency-compact-btn.pulse {
+    animation: currencyPulse 3s ease-in-out infinite;
+}
+
+/* Эффект смены валюты */
+@keyframes currencySpin {
+    0% {
+        transform: rotate(0deg) scale(1);
     }
     50% {
-        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.1);
+        transform: rotate(180deg) scale(1.2);
+    }
+    100% {
+        transform: rotate(360deg) scale(1);
     }
 }
 
-@keyframes download-bounce {
-    0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0) scale(1.15);
+.currency-spin {
+    animation: currencySpin 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Эффект появления при загрузке - из угла */
+@keyframes slideInCorner {
+    from {
+        opacity: 0;
+        transform: translate(80px, -80px) scale(0.6);
     }
-    40% {
-        transform: translateY(-5px) scale(1.2);
-    }
-    60% {
-        transform: translateY(-3px) scale(1.18);
+    to {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
     }
 }
 
-@keyframes float {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-5px) rotate(5deg); }
+.currency-corner {
+    animation: slideInCorner 1s cubic-bezier(0.4, 0, 0.2, 1) 0.7s both;
 }
 
-/* Адаптивность */
-@media (max-width: 1024px) {
-    .header-content {
-        padding: 15px 20px;
-        gap: 20px;
-    }
-    
-    .nav {
-        gap: 8px;
-    }
-    
-    .nav-btn {
-        padding: 10px 16px;
-        min-width: 90px;
-    }
-    
-    .logo-title {
-        font-size: 1.4rem;
-    }
-    
-    .logo-icon {
-        font-size: 2rem;
-    }
-}
-
+/* Адаптивность для компактной валюты - в углу */
 @media (max-width: 768px) {
-    .header-content {
-        flex-direction: column;
-        gap: 15px;
-        padding: 15px;
+    .currency-corner {
+        top: 15px;
+        right: 15px;
     }
     
-    .nav {
-        order: 2;
-        width: 100%;
-        justify-content: center;
+    .currency-compact-btn {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
     }
     
-    .logo-left {
-        order: 1;
+    .currency-compact-icon {
+        font-size: 1.1rem;
     }
     
-    .nav-btn {
-        padding: 10px 14px;
-        min-width: 80px;
+    .currency-compact-symbol {
+        font-size: 0.9rem;
     }
     
-    .nav-text {
-        font-size: 0.85rem;
-    }
-}
-
-@media (max-width: 640px) {
-    .nav-text {
-        display: none;
+    .currency-dropdown-menu.compact {
+        min-width: 140px;
+        padding: 14px;
+        margin-top: 12px;
     }
     
-    .nav-btn {
-        padding: 12px;
-        border-radius: 50%;
-        width: 44px;
-        height: 44px;
-        min-width: auto;
+    .currency-dropdown-menu.compact .currency-option {
+        padding: 10px 12px;
     }
     
-    .nav-icon {
-        margin: 0;
-    }
-    
-    .logo-title {
-        font-size: 1.3rem;
-    }
-    
-    .logo-icon {
-        font-size: 1.8rem;
+    .currency-dropdown-menu.compact .currency-text {
+        font-size: 0.8rem;
     }
 }
 
 @media (max-width: 480px) {
-    .nav {
-        gap: 6px;
+    .currency-corner {
+        top: 12px;
+        right: 12px;
     }
     
-    .nav-btn {
+    .currency-compact-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+    }
+    
+    .currency-compact-icon {
+        font-size: 1rem;
+    }
+    
+    .currency-compact-symbol {
+        font-size: 0.85rem;
+    }
+    
+    .currency-dropdown-menu.compact {
+        min-width: 130px;
+        padding: 12px;
+    }
+    
+    .currency-dropdown-menu.compact .currency-option {
+        padding: 8px 10px;
+        gap: 8px;
+    }
+    
+    .currency-dropdown-menu.compact .currency-flag {
+        font-size: 1.1rem;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 360px) {
+    .currency-corner {
+        top: 10px;
+        right: 10px;
+    }
+    
+    .currency-compact-btn {
         width: 40px;
         height: 40px;
-        padding: 10px;
+        border-radius: 10px;
     }
     
-    .logo-title {
+    .currency-dropdown-menu.compact {
+        min-width: 120px;
+        right: 0;
+    }
+}
+
+/* Гарантируем что кнопка всегда поверх всего */
+.currency-corner {
+    pointer-events: auto;
+}
+
+.currency-compact-btn {
+    pointer-events: auto;
+}
+/* Компактный выбор валюты ПРЯМО В УГЛУ ЭКРАНА */
+.currency-corner {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000; /* УВЕЛИЧЕННЫЙ z-index чтобы было поверх всего */
+}
+
+.currency-compact-btn {
+    width: 55px;
+    height: 55px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(35px);
+    border: 1.5px solid rgba(255, 255, 255, 0.35);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.currency-compact-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.7s;
+}
+
+.currency-compact-btn:hover::before {
+    left: 100%;
+}
+
+.currency-compact-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.45);
+    transform: translateY(-3px) scale(1.12);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+}
+
+.currency-compact-btn.active {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.35), rgba(139, 92, 246, 0.35));
+    border-color: rgba(14, 165, 233, 0.7);
+    box-shadow: 0 25px 50px rgba(14, 165, 233, 0.35);
+}
+
+.currency-compact-icon {
+    font-size: 1.4rem;
+    margin-bottom: 2px;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
+    transition: transform 0.3s ease;
+}
+
+.currency-compact-btn:hover .currency-compact-icon {
+    transform: scale(1.2);
+}
+
+.currency-compact-symbol {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-white);
+    text-shadow: 0 3px 12px rgba(0, 0, 0, 0.6);
+    transition: all 0.3s ease;
+}
+
+.currency-compact-btn:hover .currency-compact-symbol {
+    transform: scale(1.2);
+}
+
+/* Компактное выпадающее меню - из угла экрана */
+.currency-dropdown-menu.compact {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(45px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 20px;
+    padding: 18px;
+    margin-top: 18px;
+    min-width: 160px;
+    z-index: 10001; /* Выше чем кнопка */
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    transform: translateY(-25px) scale(0.85);
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.currency-dropdown-menu.compact.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+}
+
+.currency-dropdown-menu.compact .currency-options {
+    gap: 10px;
+}
+
+.currency-dropdown-menu.compact .currency-option {
+    padding: 14px 16px;
+    border-radius: 16px;
+    gap: 12px;
+    border: 1px solid transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.currency-dropdown-menu.compact .currency-option:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateX(-8px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.currency-dropdown-menu.compact .currency-option.active {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.4), rgba(139, 92, 246, 0.4));
+    border-color: rgba(14, 165, 233, 0.8);
+    box-shadow: 0 10px 30px rgba(14, 165, 233, 0.4);
+}
+
+.currency-dropdown-menu.compact .currency-text {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-white);
+}
+
+.currency-dropdown-menu.compact .currency-symbol {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #51cf66;
+}
+
+.currency-dropdown-menu.compact .currency-flag {
+    font-size: 1.4rem;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+}
+
+/* Эффект пульсации */
+@keyframes currencyPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 18px rgba(14, 165, 233, 0);
+    }
+}
+
+.currency-compact-btn.pulse {
+    animation: currencyPulse 3.5s ease-in-out infinite;
+}
+
+/* Эффект смены валюты */
+@keyframes currencySpin {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+    50% {
+        transform: rotate(180deg) scale(1.25);
+    }
+    100% {
+        transform: rotate(360deg) scale(1);
+    }
+}
+
+.currency-spin {
+    animation: currencySpin 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Эффект появления при загрузке - из-за угла экрана */
+@keyframes slideInFromCorner {
+    from {
+        opacity: 0;
+        transform: translate(100px, -100px) scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+.currency-corner {
+    animation: slideInFromCorner 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.8s both;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .currency-corner {
+        top: 15px;
+        right: 15px;
+    }
+    
+    .currency-compact-btn {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .currency-compact-icon {
         font-size: 1.2rem;
     }
     
-    .logo-icon {
-        font-size: 1.6rem;
+    .currency-compact-symbol {
+        font-size: 1rem;
     }
+}
+
+@media (max-width: 480px) {
+    .currency-corner {
+        top: 12px;
+        right: 12px;
+    }
+    
+    .currency-compact-btn {
+        width: 46px;
+        height: 46px;
+    }
+    
+    .currency-compact-icon {
+        font-size: 1.1rem;
+    }
+    
+    .currency-compact-symbol {
+        font-size: 0.9rem;
+    }
+}
+.price-error-detail {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    margin-top: 5px;
 }
 /* Стили для магазинов и цен */
 .stores-container {
@@ -2077,19 +2025,49 @@ input:focus, textarea:focus, select:focus {
 
 .price-success {
     color: #51cf66;
+}
+
+.price-discounted {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.9rem;
+}
+
+.current-price {
+    color: #51cf66;
+    font-weight: 700;
+    font-size: 1.3rem;
+}
+
+.discount-badge {
+    background: #ff6b6b;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
     font-weight: 600;
 }
 
-.price-amount {
-    font-size: 1.3rem;
-    font-weight: 700;
-    margin-bottom: 5px;
+.price-saving {
+    color: #ffd43b;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 8px;
 }
 
 .price-store {
+    color: var(--text-gray);
     font-size: 0.9rem;
-    opacity: 0.8;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .buy-btn {
@@ -2109,6 +2087,17 @@ input:focus, textarea:focus, select:focus {
     box-shadow: 0 5px 15px rgba(14, 165, 233, 0.4);
 }
 
+.price-unavailable {
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+}
+
+.price-error-detail {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    margin-top: 5px;
+}
+
 /* Адаптивность для магазинов */
 @media (max-width: 768px) {
     .store-buttons {
@@ -2124,93 +2113,163 @@ input:focus, textarea:focus, select:focus {
         padding: 12px;
     }
 }
-.currency-selector {
-    margin-left: 20px;
-}
-
-.currency-dropdown {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    color: white;
-    padding: 8px 12px;
-    font-size: 0.9rem;
-    backdrop-filter: blur(10px);
-    cursor: pointer;
-}
-
-.currency-dropdown option {
-    background: #2d3748;
-    color: white;
-}
-
-.currency-dropdown:focus {
-    outline: none;
-    border-color: var(--primary-blue);
-    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.3);
-}
-
-/* Обновленные стили для цен */
-.price-discounted {
+.price-actions {
     display: flex;
-    align-items: center;
     gap: 10px;
-    justify-content: center;
+    margin-top: 15px;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
-.original-price {
-    text-decoration: line-through;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 0.9rem;
+.buy-btn {
+    background: linear-gradient(45deg, var(--primary-blue), var(--primary-purple));
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    flex: 1;
+    min-width: 120px;
 }
 
-.current-price {
+.buy-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(14, 165, 233, 0.4);
+}
+
+.visit-page-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-white);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    flex: 1;
+    min-width: 120px;
+}
+
+.visit-page-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Улучшенные стили для ошибок цен */
+.price-error, .price-unavailable {
+    text-align: center;
+    padding: 15px;
+}
+
+.price-error .visit-page-btn,
+.price-unavailable .visit-page-btn {
+    margin-top: 10px;
+    width: 100%;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 480px) {
+    .price-actions {
+        flex-direction: column;
+    }
+    
+    .buy-btn, .visit-page-btn {
+        min-width: 100%;
+    }
+}
+/* Стили для кнопок действий с ценами */
+.price-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.buy-btn {
+    background: linear-gradient(45deg, var(--primary-blue), var(--primary-purple));
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    flex: 1;
+    min-width: 120px;
+}
+
+.buy-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(14, 165, 233, 0.4);
+}
+
+.visit-page-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-white);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    flex: 1;
+    min-width: 120px;
+}
+
+.visit-page-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Улучшенные стили для ошибок цен */
+.price-error, .price-unavailable {
+    text-align: center;
+    padding: 15px;
+}
+
+.price-error .price-actions,
+.price-unavailable .price-actions {
+    margin-top: 10px;
+}
+
+/* Стиль для бесплатных игр */
+.current-price.free {
     color: #51cf66;
     font-weight: 700;
     font-size: 1.3rem;
 }
 
-.discount-badge {
-    background: #ff6b6b;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.price-saving {
-    color: #ffd43b;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.price-loading {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    justify-content: center;
-}
-
-.price-error {
-    text-align: center;
-    color: #ff6b6b;
-}
-
-.price-unavailable {
-    color: rgba(255, 255, 255, 0.6);
-    font-style: italic;
-}
-
-/* Адаптивность для валюты */
-@media (max-width: 768px) {
-    .currency-selector {
-        margin-left: 10px;
+/* Адаптивность для мобильных */
+@media (max-width: 480px) {
+    .price-actions {
+        flex-direction: column;
     }
     
-    .currency-dropdown {
+    .buy-btn, .visit-page-btn {
+        min-width: 100%;
+    }
+    
+    .stores-container {
+        padding: 10px;
+    }
+    
+    .store-buttons {
+        gap: 4px;
+    }
+    
+    .store-btn {
         padding: 6px 10px;
         font-size: 0.8rem;
     }
+}
+.ai-confidence {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 8px 0;
+    text-align: center;
 }
