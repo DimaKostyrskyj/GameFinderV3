@@ -7,109 +7,54 @@ class GameSearchAI {
     }
 
     async searchGames(userQuery) {
-        const cacheKey = userQuery.toLowerCase().trim();
+    try {
+        console.log('🤖 Starting AI search for:', userQuery);
         
-        // Проверяем кэш
-        if (this.cache.has(cacheKey)) {
-            const cached = this.cache.get(cacheKey);
-            if (Date.now() - cached.timestamp < this.cacheTimeout) {
-                console.log('✅ Используем кэшированный ответ');
-                return cached.data;
-            }
+        const prompt = this.createSearchPrompt(userQuery);
+        
+        const response = await fetch('/proxy.php?endpoint=deepseek-chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: "deepseek-chat",
+                messages: [
+                    {
+                        role: "system",
+                        content: "Ты помощник по подбору игр. Анализируй запросы пользователей и предлагай релевантные игры с подробным описанием."
+                    },
+                    {
+                        role: "user", 
+                        content: prompt
+                    }
+                ],
+                max_tokens: 4000,
+                temperature: 0.7,
+                stream: false
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`DeepSeek API error: ${response.status}`);
         }
 
-        try {
-            const response = await fetch('/proxy.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    model: 'deepseek-chat',
-                    messages: [
-                        {
-                            role: 'system',
-                            content: `Ты AI для поиска игр. ОТВЕЧАЙ ТОЛЬКО В JSON ФОРМАТЕ БЕЗ ЛЮБЫХ ДОПОЛНИТЕЛЬНЫХ ТЕКСТОВ.
+        const data = await response.json();
+        
+        if (!data.choices || !data.choices[0]) {
+            throw new Error('Invalid response from AI');
+        }
 
-Требуемый JSON формат:
-{
-  "games": [
-    {
-      "name": "Название игры",
-      "genre": "Жанр",
-      "description": "Короткое описание до 100 символов",
-      "moodMatch": 0.85,
-      "playtime": "10-20 часов",
-      "vibe": "Атмосфера",
-      "whyPerfect": "Почему подходит запросу"
+        const content = data.choices[0].message.content;
+        console.log('🤖 AI Response:', content);
+
+        return this.parseAIResponse(content);
+        
+    } catch (error) {
+        console.error('❌ DeepSeek API error:', error);
+        throw new Error(`AI service unavailable: ${error.message}`);
     }
-  ],
-  "analysis": {
-    "understoodMood": "Понятое настроение",
-    "recommendedStyle": "Рекомендуемый стиль",
-    "keyFactors": ["фактор1", "фактор2", "фактор3"],
-    "reasoning": "Краткое объяснение подбора"
-  }
 }
-
-ПРАВИЛА:
-- games: 3-5 игр
-- moodMatch: от 0.7 до 0.95
-- description: максимум 100 символов
-- whyPerfect: максимум 80 символов
-- reasoning: максимум 150 символов
-- keyFactors: 3-5 факторов
-
-ВЕРНИ ТОЛЬКО JSON БЕЗ КАВЫЧЕК И ДОПОЛНИТЕЛЬНОГО ТЕКСТА.`
-                        },
-                        {
-                            role: 'user', 
-                            content: `Запрос пользователя: "${userQuery}". Верни ТОЛЬКО JSON без дополнительного текста.`
-                        }
-                    ],
-                    temperature: 0.1,
-                    max_tokens: 1500,
-                    stream: false
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`API Error: ${response.status} ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            
-            if (!data.choices || !data.choices[0]) {
-                throw new Error('Invalid API response format');
-            }
-
-            const content = data.choices[0].message.content;
-            
-            console.log('📨 Raw AI Response:', content);
-
-            // Очищаем и парсим JSON
-            const cleanedJson = this.cleanJsonResponse(content);
-            const result = JSON.parse(cleanedJson);
-            
-            // Валидация результата
-            this.validateGameData(result);
-            
-            // Сохраняем в кэш
-            this.cache.set(cacheKey, {
-                data: result,
-                timestamp: Date.now()
-            });
-            
-            this.cleanupCache();
-            
-            console.log('✅ Успешно получены игры:', result.games.length);
-            return result;
-            
-        } catch (error) {
-            console.error('❌ API Request failed:', error);
-            throw new Error(`Не удалось получить ответ от AI: ${error.message}`);
-        }
-    }
 
     // 🧹 Очистка JSON ответа
     cleanJsonResponse(content) {
