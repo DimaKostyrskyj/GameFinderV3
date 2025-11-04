@@ -1,117 +1,175 @@
+// Улучшенная система поиска игр с надежным парсингом JSON
 class GameSearchAI {
     constructor(apiKey) {
         this.apiKey = apiKey;
-        this.baseURL = 'https://api.deepseek.com/v1';
+        this.cache = new Map();
+        this.cacheTimeout = 10 * 60 * 1000; // 10 минут
     }
 
-    async searchGames(userRequest) {
-        // Проверяем API ключ
-        if (!this.apiKey || this.apiKey === 'YOUR_DEEPSEEK_API_KEY_HERE') {
-            throw new Error('❌ Добавьте ваш DeepSeek API ключ в файле script.js');
+    async searchGames(userQuery) {
+        const cacheKey = userQuery.toLowerCase().trim();
+        
+        // Проверяем кэш
+        if (this.cache.has(cacheKey)) {
+            const cached = this.cache.get(cacheKey);
+            if (Date.now() - cached.timestamp < this.cacheTimeout) {
+                console.log('✅ Используем кэшированный ответ');
+                return cached.data;
+            }
         }
 
-        const prompt = `
-Пользователь ищет игры по запросу: "${userRequest}"
+        const response = await fetch('https://api.deepseek.com/v1', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'deepseek-chat',
+                messages: [
+                    {
+                        role: 'system',
+                        content: `Ты AI для поиска игр. ОТВЕЧАЙ ТОЛЬКО В JSON ФОРМАТЕ БЕЗ ЛЮБЫХ ДОПОЛНИТЕЛЬНЫХ ТЕКСТОВ.
 
-ПРОАНАЛИЗИРУЙ запрос и ПОДБЕРИ 10-12 КОНКРЕТНЫХ СУЩЕСТВУЮЩИХ ИГР которые идеально подходят.
-
-Верни ответ ТОЛЬКО в JSON формате:
-
+Требуемый JSON формат:
 {
-    "analysis": {
-        "understoodMood": "краткое описание настроения",
-        "keyFactors": ["фактор1", "фактор2", "фактор3", "фактор4"],
-        "recommendedStyle": "стиль игр",
-        "reasoning": "подробное объяснение подбора"
-    },
-    "games": [
-        {
-            "name": "Точное название игры",
-            "genre": "Основной жанр",
-            "moodMatch": 0.95,
-            "description": "Краткое описание игры и геймплея",
-            "whyPerfect": "Конкретная причина почему идеально подходит для запроса",
-            "playtime": "Примерное время прохождения",
-            "vibe": "Атмосфера игры",
-            "platforms": ["PC", "PS5", "Xbox", "Switch"]
-        }
-    ],
-    "summary": "Итоговое объяснение подбора"
+  "games": [
+    {
+      "name": "Название игры",
+      "genre": "Жанр",
+      "description": "Короткое описание до 100 символов",
+      "moodMatch": 0.85,
+      "playtime": "10-20 часов",
+      "vibe": "Атмосфера",
+      "whyPerfect": "Почему подходит запросу"
+    }
+  ],
+  "analysis": {
+    "understoodMood": "Понятое настроение",
+    "recommendedStyle": "Рекомендуемый стиль",
+    "keyFactors": ["фактор1", "фактор2", "фактор3"],
+    "reasoning": "Краткое объяснение подбора"
+  }
 }
 
-ТРЕБОВАНИЯ:
-- ТОЧНО 10-12 игр (не меньше!)
-- Только реальные существующие игры
-- Разнообразие жанров и стилей
-- Высокое качество подбора
-- Точные названия и описания`;
+ПРАВИЛА:
+- games: 3-5 игр
+- moodMatch: от 0.7 до 0.95
+- description: максимум 100 символов
+- whyPerfect: максимум 80 символов
+- reasoning: максимум 150 символов
+- keyFactors: 3-5 факторов
 
-        try {
-            console.log('🔍 Отправляем запрос к DeepSeek API...');
+ВЕРНИ ТОЛЬКО JSON БЕЗ КАВЫЧЕК И ДОПОЛНИТЕЛЬНОГО ТЕКСТА.`
+                    },
+                    {
+                        role: 'user', 
+                        content: `Запрос пользователя: "${userQuery}". Верни ТОЛЬКО JSON без дополнительного текста.`
+                    }
+                ],
+                temperature: 0.1,
+                max_tokens: 1500,
+                stream: false
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const content = data.choices[0].message.content;
+        
+        console.log('📨 Raw AI Response:', content);
+
+        // Очищаем и парсим JSON
+        const cleanedJson = this.cleanJsonResponse(content);
+        const result = JSON.parse(cleanedJson);
+        
+        // Валидация результата
+        this.validateGameData(result);
+        
+        // Сохраняем в кэш
+        this.cache.set(cacheKey, {
+            data: result,
+            timestamp: Date.now()
+        });
+        
+        this.cleanupCache();
+        
+        console.log('✅ Успешно получены игры:', result.games.length);
+        return result;
+    }
+
+    // 🧹 Очистка JSON ответа
+    cleanJsonResponse(content) {
+        let jsonString = content.trim();
+        
+        console.log('🔧 Cleaning JSON response...');
+        
+        // Убираем markdown код блока
+        if (jsonString.includes('```json')) {
+            jsonString = jsonString.split('```json')[1].split('```')[0].trim();
+        } else if (jsonString.includes('```')) {
+            jsonString = jsonString.split('```')[1].split('```')[0].trim();
+        }
+        
+        // Убираем возможные префиксы
+        jsonString = jsonString.replace(/^JSON:\s*/i, '');
+        jsonString = jsonString.replace(/^```\s*/i, '');
+        jsonString = jsonString.replace(/```$/i, '');
+        
+        // Исправляем распространенные ошибки JSON
+        jsonString = jsonString
+            .replace(/(['"])?([a-zA-Z0-9_]+)(['"])?\s*:/g, '"$2":') // Ключи в кавычках
+            .replace(/,(\s*[}\]])/g, '$1') // Висящие запятые
+            .replace(/,\s*}/g, '}') // Висящие запятые в объектах
+            .replace(/,\s*]/g, ']') // Висящие запятые в массивах
+            .replace(/:\s*'([^']*)'/g, ':"$1"') // Одинарные кавычки в значениях
+            .replace(/\n/g, ' ') // Убираем переносы строк
+            .replace(/\s+/g, ' '); // Множественные пробелы
+        
+        console.log('🔧 Cleaned JSON:', jsonString);
+        return jsonString;
+    }
+
+    // ✅ Валидация данных игр
+    validateGameData(data) {
+        if (!data.games || !Array.isArray(data.games)) {
+            throw new Error('Invalid games array');
+        }
+        
+        if (!data.analysis || typeof data.analysis !== 'object') {
+            throw new Error('Invalid analysis object');
+        }
+        
+        // Проверяем каждую игру
+        data.games.forEach((game, index) => {
+            if (!game.name || !game.genre || !game.description) {
+                throw new Error(`Game ${index} missing required fields`);
+            }
             
-            const response = await fetch(`${this.baseURL}/chat/completions`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.apiKey}`
-                },
-                body: JSON.stringify({
-                    model: "deepseek-chat",
-                    messages: [
-                        {
-                            role: "system",
-                            content: "Ты - эксперт по играм. Подбирай ТОЧНО 10-12 реальных игр. Всегда возвращай валидный JSON. Не используй вымышленные игры."
-                        },
-                        {
-                            role: "user",
-                            content: prompt
-                        }
-                    ],
-                    temperature: 0.7,
-                    max_tokens: 4000
-                })
-            });
+            // Нормализуем данные
+            game.moodMatch = Math.max(0.7, Math.min(0.95, game.moodMatch || 0.8));
+            game.description = game.description.substring(0, 100);
+            game.whyPerfect = (game.whyPerfect || '').substring(0, 80);
+        });
+        
+        // Нормализуем анализ
+        if (!Array.isArray(data.analysis.keyFactors)) {
+            data.analysis.keyFactors = ['игровой процесс', 'атмосфера', 'настроение'];
+        }
+        
+        data.analysis.reasoning = (data.analysis.reasoning || '').substring(0, 150);
+    }
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`API Error: ${response.status} - ${errorText}`);
+    // 🗑️ Очистка кэша
+    cleanupCache() {
+        const now = Date.now();
+        for (const [key, value] of this.cache.entries()) {
+            if (now - value.timestamp > this.cacheTimeout) {
+                this.cache.delete(key);
             }
-
-            const data = await response.json();
-            console.log('✅ Ответ от DeepSeek получен');
-
-            if (!data.choices || !data.choices[0]) {
-                throw new Error('Некорректный формат ответа от AI');
-            }
-
-            const content = data.choices[0].message.content;
-            console.log('📄 Содержание ответа:', content);
-
-            // Извлекаем JSON из ответа
-            let jsonData;
-            try {
-                jsonData = JSON.parse(content);
-            } catch (e) {
-                // Пытаемся найти JSON в тексте
-                const jsonMatch = content.match(/\{[\s\S]*\}/);
-                if (jsonMatch) {
-                    jsonData = JSON.parse(jsonMatch[0]);
-                } else {
-                    throw new Error('AI не вернул валидный JSON');
-                }
-            }
-
-            // Проверяем количество игр
-            if (!jsonData.games || jsonData.games.length < 10) {
-                throw new Error(`AI вернул только ${jsonData.games?.length || 0} игр. Нужно 10-12.`);
-            }
-
-            console.log(`🎮 Успешно получено ${jsonData.games.length} игр`);
-            return jsonData;
-
-        } catch (error) {
-            console.error('❌ Ошибка DeepSeek AI:', error);
-            throw new Error(`Ошибка AI: ${error.message}`);
         }
     }
 }
