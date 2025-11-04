@@ -12,47 +12,77 @@ class GameSearchAI {
         
         const prompt = this.createSearchPrompt(userQuery);
         
-        const response = await fetch('/proxy.php?endpoint=deepseek-chat', {
+        const requestBody = {
+            model: "deepseek-chat",
+            messages: [
+                {
+                    role: "system", 
+                    content: `Ты эксперт по подбору игр. Анализируй запрос пользователя и предлагай 3-4 самые релевантные игры. 
+                    Отвечай ТОЛЬКО в формате JSON:
+                    {
+                        "analysis": {
+                            "understoodMood": "строка",
+                            "recommendedStyle": "строка", 
+                            "keyFactors": ["фактор1", "фактор2"],
+                            "reasoning": "строка с объяснением"
+                        },
+                        "games": [
+                            {
+                                "name": "название игры",
+                                "genre": "жанр",
+                                "description": "описание",
+                                "moodMatch": 0.95,
+                                "playtime": "время игры", 
+                                "vibe": "атмосфера",
+                                "whyPerfect": "почему подходит",
+                                "platforms": ["PC", "PS5", ...]
+                            }
+                        ]
+                    }`
+                },
+                {
+                    role: "user",
+                    content: prompt
+                }
+            ],
+            max_tokens: 4000,
+            temperature: 0.7,
+            stream: false
+        };
+
+        console.log('📤 Sending request to AI proxy...');
+        
+        const response = await fetch('/ai-proxy.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                model: "deepseek-chat",
-                messages: [
-                    {
-                        role: "system",
-                        content: "Ты помощник по подбору игр. Анализируй запросы пользователей и предлагай релевантные игры с подробным описанием."
-                    },
-                    {
-                        role: "user", 
-                        content: prompt
-                    }
-                ],
-                max_tokens: 4000,
-                temperature: 0.7,
-                stream: false
-            })
+            body: JSON.stringify(requestBody)
         });
 
+        console.log('📥 Response status:', response.status);
+        
         if (!response.ok) {
-            throw new Error(`DeepSeek API error: ${response.status}`);
+            const errorText = await response.text();
+            console.error('❌ AI Proxy error:', response.status, errorText);
+            throw new Error(`API Error: ${response.status}`);
         }
 
         const data = await response.json();
+        console.log('✅ AI Response received:', data);
         
         if (!data.choices || !data.choices[0]) {
-            throw new Error('Invalid response from AI');
+            throw new Error('Invalid response structure from AI');
         }
 
         const content = data.choices[0].message.content;
-        console.log('🤖 AI Response:', content);
+        console.log('📝 AI Content:', content);
 
         return this.parseAIResponse(content);
         
     } catch (error) {
-        console.error('❌ DeepSeek API error:', error);
-        throw new Error(`AI service unavailable: ${error.message}`);
+        console.error('❌ AI search error:', error);
+        throw new Error(`AI service error: ${error.message}`);
     }
 }
 
