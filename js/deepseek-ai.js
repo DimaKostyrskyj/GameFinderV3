@@ -10,74 +10,25 @@ class GameSearchAI {
     try {
         console.log('🤖 Starting AI search for:', userQuery);
         
-        const prompt = this.createSearchPrompt(userQuery);
+        // Кодируем запрос для URL
+        const encodedQuery = encodeURIComponent(userQuery);
         
-        const requestBody = {
-            model: "deepseek-chat",
-            messages: [
-                {
-                    role: "system", 
-                    content: `Ты эксперт по подбору игр. Анализируй запрос пользователя и предлагай 3-4 самые релевантные игры. 
-                    Отвечай ТОЛЬКО в формате JSON:
-                    {
-                        "analysis": {
-                            "understoodMood": "строка",
-                            "recommendedStyle": "строка", 
-                            "keyFactors": ["фактор1", "фактор2"],
-                            "reasoning": "строка с объяснением"
-                        },
-                        "games": [
-                            {
-                                "name": "название игры",
-                                "genre": "жанр",
-                                "description": "описание",
-                                "moodMatch": 0.95,
-                                "playtime": "время игры", 
-                                "vibe": "атмосфера",
-                                "whyPerfect": "почему подходит",
-                                "platforms": ["PC", "PS5", ...]
-                            }
-                        ]
-                    }`
-                },
-                {
-                    role: "user",
-                    content: prompt
-                }
-            ],
-            max_tokens: 4000,
-            temperature: 0.7,
-            stream: false
-        };
-
-        console.log('📤 Sending request to AI proxy...');
-        
-        const response = await fetch('/ai-proxy.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestBody)
-        });
+        const response = await fetch(`/ai-proxy-get.php?query=${encodedQuery}`);
 
         console.log('📥 Response status:', response.status);
         
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ AI Proxy error:', response.status, errorText);
             throw new Error(`API Error: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('✅ AI Response received:', data);
+        console.log('✅ AI Response received');
         
         if (!data.choices || !data.choices[0]) {
-            throw new Error('Invalid response structure from AI');
+            throw new Error('Invalid response from AI');
         }
 
         const content = data.choices[0].message.content;
-        console.log('📝 AI Content:', content);
-
         return this.parseAIResponse(content);
         
     } catch (error) {
