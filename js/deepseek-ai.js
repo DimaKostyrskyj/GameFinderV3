@@ -1,4 +1,4 @@
-// Улучшенная система поиска игр с надежным парсингом JSON
+// Улучшенная система поиска игр с прокси
 class GameSearchAI {
     constructor(apiKey) {
         this.apiKey = apiKey;
@@ -18,18 +18,18 @@ class GameSearchAI {
             }
         }
 
-        const response = await fetch('https://api.deepseek.com/v1', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.apiKey}`
-            },
-            body: JSON.stringify({
-                model: 'deepseek-chat',
-                messages: [
-                    {
-                        role: 'system',
-                        content: `Ты AI для поиска игр. ОТВЕЧАЙ ТОЛЬКО В JSON ФОРМАТЕ БЕЗ ЛЮБЫХ ДОПОЛНИТЕЛЬНЫХ ТЕКСТОВ.
+        try {
+            const response = await fetch('/proxy.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: 'deepseek-chat',
+                    messages: [
+                        {
+                            role: 'system',
+                            content: `Ты AI для поиска игр. ОТВЕЧАЙ ТОЛЬКО В JSON ФОРМАТЕ БЕЗ ЛЮБЫХ ДОПОЛНИТЕЛЬНЫХ ТЕКСТОВ.
 
 Требуемый JSON формат:
 {
@@ -61,44 +61,54 @@ class GameSearchAI {
 - keyFactors: 3-5 факторов
 
 ВЕРНИ ТОЛЬКО JSON БЕЗ КАВЫЧЕК И ДОПОЛНИТЕЛЬНОГО ТЕКСТА.`
-                    },
-                    {
-                        role: 'user', 
-                        content: `Запрос пользователя: "${userQuery}". Верни ТОЛЬКО JSON без дополнительного текста.`
-                    }
-                ],
-                temperature: 0.1,
-                max_tokens: 1500,
-                stream: false
-            })
-        });
+                        },
+                        {
+                            role: 'user', 
+                            content: `Запрос пользователя: "${userQuery}". Верни ТОЛЬКО JSON без дополнительного текста.`
+                        }
+                    ],
+                    temperature: 0.1,
+                    max_tokens: 1500,
+                    stream: false
+                })
+            });
 
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status} ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            
+            if (!data.choices || !data.choices[0]) {
+                throw new Error('Invalid API response format');
+            }
+
+            const content = data.choices[0].message.content;
+            
+            console.log('📨 Raw AI Response:', content);
+
+            // Очищаем и парсим JSON
+            const cleanedJson = this.cleanJsonResponse(content);
+            const result = JSON.parse(cleanedJson);
+            
+            // Валидация результата
+            this.validateGameData(result);
+            
+            // Сохраняем в кэш
+            this.cache.set(cacheKey, {
+                data: result,
+                timestamp: Date.now()
+            });
+            
+            this.cleanupCache();
+            
+            console.log('✅ Успешно получены игры:', result.games.length);
+            return result;
+            
+        } catch (error) {
+            console.error('❌ API Request failed:', error);
+            throw new Error(`Не удалось получить ответ от AI: ${error.message}`);
         }
-
-        const data = await response.json();
-        const content = data.choices[0].message.content;
-        
-        console.log('📨 Raw AI Response:', content);
-
-        // Очищаем и парсим JSON
-        const cleanedJson = this.cleanJsonResponse(content);
-        const result = JSON.parse(cleanedJson);
-        
-        // Валидация результата
-        this.validateGameData(result);
-        
-        // Сохраняем в кэш
-        this.cache.set(cacheKey, {
-            data: result,
-            timestamp: Date.now()
-        });
-        
-        this.cleanupCache();
-        
-        console.log('✅ Успешно получены игры:', result.games.length);
-        return result;
     }
 
     // 🧹 Очистка JSON ответа
