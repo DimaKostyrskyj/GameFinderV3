@@ -296,6 +296,71 @@ initCurrentCurrency() {
         // Добавляем обработчики для кнопок магазинов
         this.initStoreButtons();
     }
+    
+    displayPrice(priceData, store, gameName, priceInfo) {
+    if (!priceData) {
+        priceInfo.innerHTML = '<p class="price-error">❌ Цена не найдена</p>';
+        return;
+    }
+
+    let priceHTML = '';
+    
+    if (priceData.isRealPrice) {
+        priceHTML = `
+            <div class="price-real">
+                <div class="price-main">
+                    <span class="price-amount">${this.priceAPI.formatPrice(priceData.price, priceData.currency)}</span>
+                    ${priceData.discount > 0 ? `
+                        <span class="price-discount-badge">-${priceData.discount}%</span>
+                    ` : ''}
+                </div>
+                ${priceData.originalPrice ? `
+                    <div class="price-original">
+                        Было: <span class="price-strikethrough">${this.priceAPI.formatPrice(priceData.originalPrice, priceData.currency)}</span>
+                    </div>
+                ` : ''}
+                <div class="price-source">
+                    ✅ Актуальная цена из ${store}
+                </div>
+            </div>
+        `;
+    } else {
+        priceHTML = `
+            <div class="price-calculated">
+                <div class="price-main">
+                    <span class="price-amount">${this.priceAPI.formatPrice(priceData.price, priceData.currency)}</span>
+                    ${priceData.discount > 0 ? `
+                        <span class="price-discount-badge">-${priceData.discount}%</span>
+                    ` : ''}
+                </div>
+                ${priceData.originalPrice ? `
+                    <div class="price-original">
+                        Было: <span class="price-strikethrough">${this.priceAPI.formatPrice(priceData.originalPrice, priceData.currency)}</span>
+                    </div>
+                ` : ''}
+                <div class="price-source">
+                    📊 Расчетная цена ${priceData.basedOnSteam ? '(на основе Steam)' : ''}
+                </div>
+                ${priceData.steamReference ? `
+                    <div class="price-reference">
+                        ${priceData.steamReference}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    // Добавляем кнопку перехода в магазин
+    priceHTML += `
+        <div class="price-actions">
+            <button class="visit-store-btn" onclick="window.openStore('${store}', '${gameName}')">
+                Перейти в магазин
+            </button>
+        </div>
+    `;
+
+    priceInfo.innerHTML = priceHTML;
+}
 
     initStoreButtons() {
         const storeButtons = document.querySelectorAll('.store-btn');

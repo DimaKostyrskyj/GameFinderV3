@@ -2323,3 +2323,216 @@ input:focus, textarea:focus, select:focus {
         font-size: 0.75rem;
     }
 }
+/* Стили для реальных и расчетных цен */
+.price-real, .price-calculated {
+    padding: 15px;
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+.price-real {
+    background: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.price-calculated {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.price-main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+    justify-content: center;
+}
+
+.price-amount {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #fff;
+}
+
+.price-discount-badge {
+    background: #ff4444;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.price-original {
+    color: #ccc;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.price-strikethrough {
+    text-decoration: line-through;
+}
+
+.price-source {
+    font-size: 0.9em;
+    opacity: 0.8;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.price-reference {
+    font-size: 0.8em;
+    opacity: 0.7;
+    font-style: italic;
+    text-align: center;
+    margin-top: 5px;
+}
+
+.visit-store-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.visit-store-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.price-loading {
+    text-align: center;
+    padding: 20px;
+    color: #ccc;
+    font-style: italic;
+}
+
+.price-error {
+    text-align: center;
+    padding: 20px;
+    color: #ff4444;
+}
+
+/* Улучшенные стили для кнопок магазинов */
+.store-btn {
+    padding: 8px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-gray);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+}
+
+.store-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.store-btn:hover::before {
+    left: 100%;
+}
+
+.store-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--text-white);
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.store-btn.active {
+    background: rgba(14, 165, 233, 0.3);
+    border-color: rgba(14, 165, 233, 0.5);
+    color: var(--text-white);
+}
+
+/* Анимация загрузки цен */
+@keyframes pricePulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.price-loading {
+    animation: pricePulse 1.5s ease-in-out infinite;
+}
+
+/* Стили для разных магазинов */
+.store-btn[data-store="steam"]:hover {
+    border-color: #1b2838;
+    background: rgba(27, 40, 56, 0.3);
+}
+
+.store-btn[data-store="epic"]:hover {
+    border-color: #2a2a2a;
+    background: rgba(42, 42, 42, 0.3);
+}
+
+.store-btn[data-store="xbox"]:hover {
+    border-color: #107c10;
+    background: rgba(16, 124, 16, 0.3);
+}
+
+.store-btn[data-store="ea"]:hover {
+    border-color: #ff0000;
+    background: rgba(255, 0, 0, 0.3);
+}
+
+.store-btn[data-store="ubisoft"]:hover {
+    border-color: #0078f2;
+    background: rgba(0, 120, 242, 0.3);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .price-main {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .price-amount {
+        font-size: 1.3em;
+    }
+    
+    .store-buttons {
+        gap: 5px;
+    }
+    
+    .store-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stores-container {
+        padding: 10px;
+    }
+    
+    .price-real, .price-calculated {
+        padding: 12px;
+    }
+    
+    .price-amount {
+        font-size: 1.2em;
+    }
+}

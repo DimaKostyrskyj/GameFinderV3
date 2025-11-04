@@ -1,4 +1,4 @@
-// Умная система цен с приоритетом Steam API
+// Обновленная система цен с прокси
 class PriceAPI {
     constructor() {
         this.currency = this.getSavedCurrency() || 'USD';
@@ -15,11 +15,81 @@ class PriceAPI {
             'RUB': '₽'
         };
         
-        this.STEAM_API_KEY = 'AE24FF0F346F19DAE48D097AC1FEA4F6';
         this.priceCache = new Map();
+        this.useProxy = true; // Включить прокси
     }
 
-    // 🔥 ОСНОВНОЙ МЕТОД - Real Steam Price
+    // 🔧 Универсальный метод запроса через прокси
+    async fetchWithProxy(url) {
+        if (this.useProxy) {
+            // Используем прокси для обхода CORS
+            const proxyUrl = `/proxy.php?url=${encodeURIComponent(url)}`;
+            try {
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error(`Proxy error: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('Proxy fetch error:', error);
+                throw error;
+            }
+        } else {
+            // Прямой запрос (работает только с CORS)
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+            return await response.json();
+        }
+    }
+
+    // 🔍 Поиск игры в Steam
+async searchSteamGame(gameName) {
+    try {
+        // Используем proxy вместо прямого вызова Steam API
+        const response = await fetch(`/proxy.php?endpoint=ISteamApps/GetAppList/v2/`);
+        
+        if (!response.ok) throw new Error('Steam API error');
+        
+        const data = await response.json();
+        const apps = data.applist.apps;
+        
+        // Точный поиск по названию
+        const foundApp = apps.find(app => 
+            app.name.toLowerCase().includes(gameName.toLowerCase()) ||
+            gameName.toLowerCase().includes(app.name.toLowerCase())
+        );
+        
+        return foundApp ? foundApp.appid : null;
+        
+    } catch (error) {
+        console.error('Steam search error:', error);
+        return null;
+    }
+}
+
+// 💰 Получение данных о цене из Steam
+async getSteamPriceData(appId, currency = 'us') {
+    try {
+        const response = await fetch(
+            `/proxy.php?endpoint=api/appdetails&appid=${appId}&cc=${currency}`
+        );
+        
+        if (!response.ok) throw new Error('Steam store API error');
+        
+        const data = await response.json();
+        const appData = data[appId];
+        
+        if (!appData || !appData.success || !appData.data?.price_overview) {
+            return null;
+        }
+        
+        return appData.data.price_overview;
+        
+    } catch (error) {
+        console.error('Steam price error:', error);
+        return null;
+    }
+}
+
+    // 🎯 Основной метод для Steam
     async getSteamPrice(gameName) {
         const cacheKey = `steam_${gameName}_${this.currency}`;
         
@@ -28,21 +98,24 @@ class PriceAPI {
         }
 
         try {
-            // Поиск AppID в Steam
+            // 1. Ищем appid игры
             const appId = await this.searchSteamGame(gameName);
             
             if (!appId) {
+                console.log('Игра не найдена в Steam, используем расчетную цену');
                 return await this.getEstimatedPrice(gameName, 'steam', true);
             }
 
-            // Получение реальной цены
+            // 2. Получаем реальную цену
             const currencyCode = this.getSteamCurrencyCode(this.currency);
             const priceData = await this.getSteamPriceData(appId, currencyCode);
             
             if (!priceData) {
+                console.log('Цена не найдена, используем расчетную цену');
                 return await this.getEstimatedPrice(gameName, 'steam', true);
             }
 
+            // 3. Форматируем результат
             const finalPrice = priceData.final / 100;
             const originalPrice = priceData.initial / 100;
             const discount = priceData.discount_percent;
@@ -67,9 +140,8 @@ class PriceAPI {
         }
     }
 
-    // 🎯 УМНЫЕ РАСЧЕТНЫЕ ЦЕНЫ для других платформ
+    // 📊 Расчетные цены для других платформ
     async getEpicPrice(gameName) {
-        // Пытаемся получить Steam цену как ориентир
         const steamPrice = await this.getSteamPrice(gameName);
         return this.calculatePlatformPrice(steamPrice, gameName, 'epic');
     }
@@ -89,22 +161,22 @@ class PriceAPI {
         return this.calculatePlatformPrice(steamPrice, gameName, 'ubisoft');
     }
 
-    // 🧮 Расчет цены для других платформ на основе Steam
+    // 🧮 Расчет цены для других платформ
     calculatePlatformPrice(steamPrice, gameName, platform) {
         const platformMultipliers = {
-            'epic': 0.95,    // Epic обычно чуть дешевле
-            'xbox': 1.15,    // Xbox часто дороже
-            'ea': 1.05,      // EA App - примерно как Steam
-            'ubisoft': 1.0   // Ubisoft - как Steam
+            'epic': 0.95,
+            'xbox': 1.15,
+            'ea': 1.05,
+            'ubisoft': 1.0
         };
 
         const multiplier = platformMultipliers[platform] || 1.0;
         const basePrice = steamPrice.price / multiplier;
-
-        // Генерируем правдоподобную скидку
         let discount = steamPrice.discount || 0;
+
+        // Дополнительные скидки для Epic
         if (platform === 'epic' && discount > 0) {
-            discount = Math.min(discount + 5, 90); // Epic часто дает доп. скидки
+            discount = Math.min(discount + 5, 90);
         }
 
         const finalPrice = discount > 0 ? basePrice * (1 - discount / 100) : basePrice;
@@ -122,65 +194,21 @@ class PriceAPI {
         };
     }
 
-    // 🔍 Поиск игры в Steam
-    async searchSteamGame(gameName) {
-        try {
-            const response = await fetch(`https://api.steampowered.com/ISteamApps/GetAppList/v2/`);
-            if (!response.ok) throw new Error('Steam API error');
-            
-            const data = await response.json();
-            const apps = data.applist.apps;
-            
-            // Точный поиск по названию
-            const foundApp = apps.find(app => 
-                app.name.toLowerCase().includes(gameName.toLowerCase()) ||
-                gameName.toLowerCase().includes(app.name.toLowerCase())
-            );
-            
-            return foundApp ? foundApp.appid : null;
-            
-        } catch (error) {
-            console.error('Steam search error:', error);
-            return null;
-        }
-    }
-
-    // 💰 Получение данных о цене из Steam
-    async getSteamPriceData(appId, currency = 'us') {
-        try {
-            const response = await fetch(
-                `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=${currency}&filters=price_overview`
-            );
-            
-            if (!response.ok) throw new Error('Steam store API error');
-            
-            const data = await response.json();
-            const appData = data[appId];
-            
-            if (!appData || !appData.success || !appData.data?.price_overview) {
-                return null;
-            }
-            
-            return appData.data.price_overview;
-            
-        } catch (error) {
-            console.error('Steam price error:', error);
-            return null;
-        }
-    }
-
-    // 📊 Резервный метод для расчетных цен
+    // 🎪 Резервные методы
     async getEstimatedPrice(gameName, platform, isSteam = false) {
         const realisticPrices = {
             'valheim': { basePrice: 19.99, discount: 0 },
-            'cyberpunk 2077': { basePrice: 59.99, discount: 30 },
+            'cyberpunk': { basePrice: 59.99, discount: 30 },
             'minecraft': { basePrice: 26.95, discount: 0 },
             'stardew valley': { basePrice: 14.99, discount: 0 },
             'call of duty': { basePrice: 69.99, discount: 20 },
-            'the witcher 3': { basePrice: 39.99, discount: 70 },
-            'grand theft auto v': { basePrice: 29.99, discount: 50 },
+            'the witcher': { basePrice: 39.99, discount: 70 },
+            'grand theft auto': { basePrice: 29.99, discount: 50 },
             'elden ring': { basePrice: 59.99, discount: 25 },
-            'hades': { basePrice: 24.99, discount: 20 }
+            'hades': { basePrice: 24.99, discount: 20 },
+            'fall guys': { basePrice: 0, discount: 0 },
+            'among us': { basePrice: 4.99, discount: 0 },
+            'rust': { basePrice: 39.99, discount: 0 }
         };
 
         const name = gameName.toLowerCase();
@@ -209,7 +237,7 @@ class PriceAPI {
         };
     }
 
-    // 🎪 Вспомогательные методы
+    // 🛠️ Вспомогательные методы
     getSteamCurrencyCode(currency) {
         const codes = { 'USD': 'us', 'EUR': 'eu', 'UAH': 'ua', 'RUB': 'ru' };
         return codes[currency] || 'us';
