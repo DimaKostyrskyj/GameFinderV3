@@ -388,7 +388,7 @@ async handleStoreClick(store, gameName, button) {
     
     try {
         const price = await this.fetchGamePrice(gameName, store);
-        this.displayPrice(price, store, gameName, priceInfo);
+        this.displayPrice(price, store, gameName, priceInfo); // ✅ Исправлено
     } catch (error) {
         console.error('Price fetch error:', error);
         
