@@ -163,28 +163,34 @@ initCurrentCurrency() {
     }
 
     async handleSearch() {
-        const query = this.searchInput ? this.searchInput.value.trim() : '';
-        
-        if (!query) {
-            this.showError('📝 Пожалуйста, опишите что вы ищете');
-            return;
-        }
-
-        console.log('🔍 Search query:', query);
-        this.setLoading(true);
-        this.hideError();
-
-        try {
-            const gameAI = new GameSearchAI(CONFIG.DEEPSEEK_API_KEY);
-            const results = await gameAI.searchGames(query);
-            this.displayResults(results);
-        } catch (error) {
-            console.error('❌ Search error:', error);
-            this.showError(`❌ ${error.message}`);
-        } finally {
-            this.setLoading(false);
-        }
+    const query = this.searchInput ? this.searchInput.value.trim() : '';
+    
+    if (!query) {
+        this.showError('📝 Пожалуйста, опишите что вы ищете');
+        return;
     }
+
+    console.log('🔍 Search query:', query);
+    this.setLoading(true);
+    this.hideError();
+
+    try {
+        const gameAI = new GameSearchAI(CONFIG.DEEPSEEK_API_KEY);
+        const results = await gameAI.searchGames(query);
+        this.displayResults(results);
+        
+        // Показываем уведомление если используется fallback
+        if (results.analysis.reasoning.includes('популярные игры')) {
+            this.showError('⚠️ Используем локальную базу игр. AI временно недоступен.');
+        }
+        
+    } catch (error) {
+        console.error('❌ Search error:', error);
+        this.showError('❌ Произошла ошибка при поиске игр');
+    } finally {
+        this.setLoading(false);
+    }
+}
 
     setLoading(isLoading) {
         if (!this.searchBtn) return;
@@ -296,7 +302,7 @@ initCurrentCurrency() {
         // Добавляем обработчики для кнопок магазинов
         this.initStoreButtons();
     }
-    
+
     displayPrice(priceData, store, gameName, priceInfo) {
     if (!priceData) {
         priceInfo.innerHTML = '<p class="price-error">❌ Цена не найдена</p>';
