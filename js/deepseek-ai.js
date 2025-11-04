@@ -10,22 +10,22 @@ class GameSearchAI {
     try {
         console.log('🤖 Starting AI search for:', userQuery);
         
-        // Кодируем запрос для URL
+        // Используем GET запрос - он более надежный
         const encodedQuery = encodeURIComponent(userQuery);
-        
-        const response = await fetch(`/ai-proxy-get.php?query=${encodedQuery}`);
+        const response = await fetch(`/api.php?action=deepseek&query=${encodedQuery}`);
 
         console.log('📥 Response status:', response.status);
         
         if (!response.ok) {
-            throw new Error(`API Error: ${response.status}`);
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
         }
 
         const data = await response.json();
         console.log('✅ AI Response received');
         
         if (!data.choices || !data.choices[0]) {
-            throw new Error('Invalid response from AI');
+            throw new Error('Invalid response structure from AI');
         }
 
         const content = data.choices[0].message.content;
@@ -36,6 +36,7 @@ class GameSearchAI {
         throw new Error(`AI service error: ${error.message}`);
     }
 }
+
 
     // 🧹 Очистка JSON ответа
     cleanJsonResponse(content) {
