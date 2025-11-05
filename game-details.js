@@ -21,7 +21,7 @@ class GameDetailsPage {
         console.log('🎮 Загружена игра:', this.currentGame);
         
         this.displayGameInfo();
-        this.loadSteamData();
+        this.loadGameImage();
     }
 
     displayGameInfo() {
@@ -34,19 +34,23 @@ class GameDetailsPage {
         document.getElementById('detailVibe').textContent = this.currentGame.vibe;
         document.getElementById('detailDescription').textContent = this.currentGame.description;
         document.getElementById('detailReason').textContent = this.currentGame.whyPerfect;
+        
+        // Устанавливаем требования по умолчанию
+        this.setDefaultRequirements();
     }
 
-    async loadSteamData() {
+    async loadGameImage() {
         try {
-            // Ищем Steam App ID для получения изображения
-            await this.findSteamAppId();
-            
-            if (this.steamAppId) {
-                await this.loadSteamGameDetails();
+            // Ищем изображение игры через Steam API
+            const appId = await this.findSteamAppId();
+            if (appId) {
+                await this.loadSteamGameDetails(appId);
+            } else {
+                this.showPlaceholderImage();
             }
-            
         } catch (error) {
-            console.error('Ошибка загрузки Steam данных:', error);
+            console.error('Ошибка загрузки изображения:', error);
+            this.showPlaceholderImage();
         }
     }
 
@@ -59,57 +63,60 @@ class GameDetailsPage {
             const data = await response.json();
             const apps = data.applist.apps;
             
+            // Ищем точное совпадение или частичное
             const foundApp = apps.find(app => 
                 app.name.toLowerCase() === this.currentGame.name.toLowerCase() ||
                 app.name.toLowerCase().includes(this.currentGame.name.toLowerCase()) ||
                 this.currentGame.name.toLowerCase().includes(app.name.toLowerCase())
             );
             
-            this.steamAppId = foundApp ? foundApp.appid : null;
+            return foundApp ? foundApp.appid : null;
             
         } catch (error) {
             console.error('Ошибка поиска Steam App ID:', error);
+            return null;
         }
     }
 
-    async loadSteamGameDetails() {
+    async loadSteamGameDetails(appId) {
         try {
-            const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${this.steamAppId}&l=russian`);
+            const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appId}&l=russian`);
             
             if (!response.ok) throw new Error('Steam Store API недоступен');
             
             const data = await response.json();
-            const gameData = data[this.steamAppId];
+            const gameData = data[appId];
             
             if (gameData && gameData.success) {
                 this.enrichWithSteamData(gameData.data);
+            } else {
+                this.showPlaceholderImage();
             }
             
         } catch (error) {
             console.error('Ошибка загрузки деталей игры:', error);
+            this.showPlaceholderImage();
         }
     }
 
     enrichWithSteamData(steamData) {
-        // Обновляем данные из Steam
-        if (steamData.name) {
-            document.getElementById('detailGameTitle').textContent = steamData.name;
+        // Обновляем изображение
+        if (steamData.header_image) {
+            this.loadGameImage(steamData.header_image);
         }
         
+        // Обновляем описание если есть
+        if (steamData.short_description) {
+            document.getElementById('detailDescription').textContent = steamData.short_description;
+        }
+        
+        // Обновляем жанр если есть
         if (steamData.genres) {
             const genres = steamData.genres.map(genre => genre.description);
             document.getElementById('detailGenre').textContent = genres.join(', ');
         }
         
-        if (steamData.short_description) {
-            document.getElementById('detailDescription').textContent = steamData.short_description;
-        }
-        
-        if (steamData.header_image) {
-            this.loadGameImage(steamData.header_image);
-        }
-        
-        // Системные требования
+        // Загружаем системные требования
         if (steamData.pc_requirements) {
             this.displaySteamRequirements(steamData.pc_requirements);
         }
@@ -124,7 +131,42 @@ class GameDetailsPage {
             placeholder.style.display = 'none';
         };
         
+        imageElement.onerror = () => {
+            this.showPlaceholderImage();
+        };
+        
         imageElement.src = imageUrl;
+    }
+
+    showPlaceholderImage() {
+        const imageElement = document.getElementById('detailGameImage');
+        const placeholder = document.getElementById('imagePlaceholder');
+        
+        imageElement.style.display = 'none';
+        placeholder.style.display = 'flex';
+    }
+
+    setDefaultRequirements() {
+        // Устанавливаем базовые требования
+        const defaultRequirements = {
+            minOS: 'Windows 10',
+            minCPU: 'Intel Core i5 или аналогичный',
+            minRAM: '8 GB RAM',
+            minGPU: 'GTX 960 или аналогичная',
+            minStorage: '50 GB',
+            recOS: 'Windows 11',
+            recCPU: 'Intel Core i7 или аналогичный',
+            recRAM: '16 GB RAM',
+            recGPU: 'RTX 2060 или аналогичная',
+            recStorage: '50 GB'
+        };
+
+        Object.keys(defaultRequirements).forEach(key => {
+            const element = document.getElementById(key);
+            if (element) {
+                element.textContent = defaultRequirements[key];
+            }
+        });
     }
 
     displaySteamRequirements(requirements) {
@@ -132,19 +174,19 @@ class GameDetailsPage {
         const recReq = this.parseRequirements(requirements.recommended);
         
         if (minReq) {
-            document.getElementById('minOS').textContent = minReq.os || 'Информация отсутствует';
-            document.getElementById('minCPU').textContent = minReq.cpu || 'Информация отсутствует';
-            document.getElementById('minRAM').textContent = minReq.ram || 'Информация отсутствует';
-            document.getElementById('minGPU').textContent = minReq.gpu || 'Информация отсутствует';
-            document.getElementById('minStorage').textContent = minReq.storage || 'Информация отсутствует';
+            if (minReq.os) document.getElementById('minOS').textContent = minReq.os;
+            if (minReq.cpu) document.getElementById('minCPU').textContent = minReq.cpu;
+            if (minReq.ram) document.getElementById('minRAM').textContent = minReq.ram;
+            if (minReq.gpu) document.getElementById('minGPU').textContent = minReq.gpu;
+            if (minReq.storage) document.getElementById('minStorage').textContent = minReq.storage;
         }
         
         if (recReq) {
-            document.getElementById('recOS').textContent = recReq.os || 'Информация отсутствует';
-            document.getElementById('recCPU').textContent = recReq.cpu || 'Информация отсутствует';
-            document.getElementById('recRAM').textContent = recReq.ram || 'Информация отсутствует';
-            document.getElementById('recGPU').textContent = recReq.gpu || 'Информация отсутствует';
-            document.getElementById('recStorage').textContent = recReq.storage || 'Информация отсутствует';
+            if (recReq.os) document.getElementById('recOS').textContent = recReq.os;
+            if (recReq.cpu) document.getElementById('recCPU').textContent = recReq.cpu;
+            if (recReq.ram) document.getElementById('recRAM').textContent = recReq.ram;
+            if (recReq.gpu) document.getElementById('recGPU').textContent = recReq.gpu;
+            if (recReq.storage) document.getElementById('recStorage').textContent = recReq.storage;
         }
     }
 

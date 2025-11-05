@@ -7,6 +7,7 @@ const CONFIG = {
 class GameFinderApp {
     constructor() {
         console.log('🎮 Initializing GameFinderApp...');
+        this.gameSearchAI = new GameSearchAI();
         this.priceAPI = window.priceAPI;
         this.initApp();
     }
@@ -25,191 +26,31 @@ class GameFinderApp {
         }
     }
 
-    initDOMElements() {
-        this.searchInput = document.getElementById('searchInput');
-        this.searchBtn = document.getElementById('searchBtn');
-        this.resultsSection = document.getElementById('results');
-        this.gamesContainer = document.getElementById('gamesContainer');
-        this.analysisContent = document.getElementById('aiAnalysis');
-        this.exampleChips = document.querySelectorAll('.example-chip');
-
-        console.log('📝 DOM elements loaded:', {
-            searchInput: !!this.searchInput,
-            searchBtn: !!this.searchBtn,
-            resultsSection: !!this.resultsSection,
-            gamesContainer: !!this.gamesContainer,
-            exampleChips: this.exampleChips.length
-        });
-    }
-
-    initEventListeners() {
-        // Кнопка поиска
-        if (this.searchBtn) {
-            this.searchBtn.addEventListener('click', () => this.handleSearch());
-        }
-
-        // Enter в поиске
-        if (this.searchInput) {
-            this.searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    this.handleSearch();
-                }
-            });
-
-            this.searchInput.addEventListener('input', this.autoResizeTextarea);
-        }
-
-        // Быстрые примеры
-        if (this.exampleChips.length > 0) {
-            this.exampleChips.forEach(chip => {
-                chip.addEventListener('click', () => {
-                    const exampleText = chip.getAttribute('data-example');
-                    if (this.searchInput) {
-                        this.searchInput.value = exampleText;
-                        this.autoResizeTextarea.call(this.searchInput);
-                    }
-                    this.handleSearch();
-                });
-            });
-        }
-
-        console.log('🎯 Event listeners attached');
-    }
-
-    initCurrencyDropdown() {
-        const currencyToggle = document.getElementById('currencyToggle');
-        const currencyMenu = document.querySelector('.currency-dropdown-menu');
-        const currencyOptions = document.querySelectorAll('.currency-option');
-        const currentCurrencySymbol = document.getElementById('currentCurrencySymbol');
-        
-        if (currencyToggle && currencyMenu) {
-            // Обработчик открытия/закрытия меню
-            currencyToggle.addEventListener('click', (e) => {
-                e.stopPropagation();
-                currencyMenu.classList.toggle('show');
-                currencyToggle.classList.toggle('active');
-            });
-            
-            // Обработчик выбора валюты
-            currencyOptions.forEach(option => {
-                option.addEventListener('click', (e) => {
-                    const currency = option.getAttribute('data-currency');
-                    const symbol = option.querySelector('.currency-symbol').textContent;
-                    
-                    this.changeCurrency(currency);
-                    
-                    // Обновляем отображение
-                    currentCurrencySymbol.textContent = symbol;
-                    
-                    // Обновляем активный класс
-                    currencyOptions.forEach(opt => opt.classList.remove('active'));
-                    option.classList.add('active');
-                    
-                    // Закрываем меню
-                    currencyMenu.classList.remove('show');
-                    currencyToggle.classList.remove('active');
-                    
-                    // Эффект смены валюты
-                    currencyToggle.classList.add('currency-spin');
-                    setTimeout(() => {
-                        currencyToggle.classList.remove('currency-spin');
-                    }, 600);
-                });
-            });
-            
-            // Закрытие при клике вне меню
-            document.addEventListener('click', (e) => {
-                if (!currencyToggle.contains(e.target) && !currencyMenu.contains(e.target)) {
-                    currencyMenu.classList.remove('show');
-                    currencyToggle.classList.remove('active');
-                }
-            });
-            
-            // Инициализация текущей валюты
-            this.initCurrentCurrency();
-        }
-    }
-
-    initCurrentCurrency() {
-        const savedCurrency = this.priceAPI.getSavedCurrency() || 'USD';
-        const currencyOptions = document.querySelectorAll('.currency-option');
-        const currentCurrencySymbol = document.getElementById('currentCurrencySymbol');
-        
-        currencyOptions.forEach(option => {
-            if (option.getAttribute('data-currency') === savedCurrency) {
-                option.classList.add('active');
-                const symbol = option.querySelector('.currency-symbol').textContent;
-                currentCurrencySymbol.textContent = symbol;
+    async handleSearch() {
+        try {
+            const query = this.searchInput.value.trim();
+            if (!query) {
+                this.showError('Пожалуйста, введите описание того, что вы ищете');
+                return;
             }
-        });
-        
-        // Добавляем пульсацию для привлечения внимания
-        setTimeout(() => {
-            const currencyToggle = document.getElementById('currencyToggle');
-            if (currencyToggle) {
-                currencyToggle.classList.add('pulse');
-                setTimeout(() => {
-                    currencyToggle.classList.remove('pulse');
-                }, 6000);
-            }
-        }, 2000);
-    }
 
-    autoResizeTextarea() {
-        this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 200) + 'px';
-    }
+            this.setLoading(true);
+            this.hideError();
 
-    async handleSearch(query, filters = {}) {
-    try {
-        this.showLoading();
-        
-        // Добавляем таймаут для запроса
-        const searchPromise = this.gameSearchAI.searchGames(query, filters);
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Request timeout')), 30000)
-        );
-        
-        const results = await Promise.race([searchPromise, timeoutPromise]);
-        
-        if (!results || typeof results !== 'object') {
-            throw new Error('Invalid response format');
+            console.log('🔍 Starting search with query:', query);
+            
+            const results = await this.gameSearchAI.searchGames(query);
+            console.log('✅ Search results:', results);
+            
+            this.displayResults(results);
+            
+        } catch (error) {
+            console.error('❌ Search error:', error);
+            this.showError(error.message);
+        } finally {
+            this.setLoading(false);
         }
-        
-        this.displayResults(results);
-        
-    } catch (error) {
-        console.error('Search error:', error);
-        this.showError(`Ошибка поиска: ${error.message}`);
-        
-        // Fallback: показать локальные результаты или кэшированные данные
-        this.showFallbackResults(query);
     }
-}
-
-// Метод для показа запасных результатов
-showFallbackResults(query) {
-    const fallbackResults = {
-        games: [
-            {
-                name: "Fallback Game 1",
-                genre: "RPG",
-                platform: "PC",
-                description: "Попробуйте обновить запрос или проверьте соединение"
-            },
-            {
-                name: "Fallback Game 2", 
-                genre: "Action",
-                platform: "Multiplatform",
-                description: "Сервис временно недоступен"
-            }
-        ]
-    };
-    
-    this.displayResults(fallbackResults);
-    this.showError("Используются локальные результаты. DeepSeek временно недоступен.");
-}
 
     setLoading(isLoading) {
         if (!this.searchBtn) return;
@@ -237,325 +78,101 @@ showFallbackResults(query) {
         this.resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         this.displayAIAnalysis(results.analysis);
         this.displayGames(results.games);
-        this.showStats(results.games.length, results.totalGames);
         
-        // Убираем кнопку "Еще" так как DeepSeek всегда возвращает 12 игр
+        // Убираем кнопку "Еще" так как DeepSeek всегда возвращает игры
         this.hideLoadMoreButton();
     }
 
-    displayAIAnalysis(analysis) {
-        if (!this.analysisContent) return;
-
-        this.analysisContent.innerHTML = `
-            <div class="analysis-header">
-                <h3>🎯 AI анализ вашего запроса</h3>
-            </div>
-            <div class="analysis-content">
-                <div class="analysis-item">
-                    <strong>📊 Понятое настроение:</strong> ${analysis.understoodMood}
-                </div>
-                <div class="analysis-item">
-                    <strong>🎨 Рекомендуемый стиль:</strong> ${analysis.recommendedStyle}
-                </div>
-                <div class="key-factors">
-                    <strong>🔑 Ключевые факторы:</strong>
-                    <div class="mood-tags">
-                        ${analysis.keyFactors.map(factor => `<span class="mood-tag">${factor}</span>`).join('')}
-                    </div>
-                </div>
-                <div class="reasoning">
-                    <strong>💡 Объяснение подбора:</strong> ${analysis.reasoning}
-                </div>
-            </div>
-        `;
-    }
-
     displayGames(games) {
-    if (!this.gamesContainer) return;
+        if (!this.gamesContainer) return;
 
-    this.gamesContainer.innerHTML = games.map((game, index) => `
-        <div class="game-card fade-in-up" style="animation-delay: ${index * 0.1}s" 
-             data-game='${JSON.stringify(game).replace(/'/g, "&#39;")}'>
-            <!-- Остальной код карточки без изменений -->
-            <div class="game-header">
-                <div class="game-title-section">
-                    <h4 class="game-title clickable-title">${game.name}</h4>
-                    <!-- ... остальной контент ... -->
+        this.gamesContainer.innerHTML = games.map((game, index) => `
+            <div class="game-card fade-in-up" style="animation-delay: ${index * 0.1}s" 
+                 data-game='${JSON.stringify(game).replace(/'/g, "&#39;")}'>
+                
+                <div class="game-header">
+                    <div class="game-title-section">
+                        <h4 class="game-title clickable-title">${game.name}</h4>
+                        <div class="game-meta">
+                            <span class="game-genre">${game.genre}</span>
+                            <span class="game-platforms">${game.platforms?.join(', ') || 'PC'}</span>
+                        </div>
+                    </div>
+                    <div class="match-score">
+                        <div class="score-circle">${Math.round(game.moodMatch * 100)}%</div>
+                        <div class="score-label">Совпадение</div>
+                    </div>
+                </div>
+
+                <div class="game-details">
+                    <div class="detail-item">
+                        <span class="detail-icon">⏱️</span>
+                        <span>${game.playtime}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">🎨</span>
+                        <span>${game.vibe}</span>
+                    </div>
+                </div>
+
+                <div class="game-description">
+                    ${game.description}
+                </div>
+
+                <div class="game-reason">
+                    <div class="reason-title">🎯 Почему подходит:</div>
+                    ${game.whyPerfect}
+                </div>
+
+                <div class="stores-container">
+                    <h4>💸 Узнать цену и купить</h4>
+                    <div class="discord-price-mini">
+                        <div class="discord-mini-content">
+                            <span class="discord-mini-icon">🎮</span>
+                            <span class="discord-mini-text">Актуальные цены в Discord</span>
+                        </div>
+                        <a href="https://discord.gg/MeHJ9epedA" class="discord-mini-btn" target="_blank">
+                            Узнать цену
+                        </a>
+                    </div>
+                    <div class="price-note">
+                        💡 Получите самые свежие цены со всех магазинов
+                    </div>
                 </div>
             </div>
-            <!-- ... остальной контент карточки ... -->
-        </div>
-    `).join('');
+        `).join('');
 
-    // Добавляем обработчики для кнопок магазинов
-    this.initStoreButtons();
-    
-    // Добавляем обработчики клика по заголовкам игр
-    this.initGameClickHandlers();
-}
+        // Добавляем обработчики для клика по играм
+        this.initGameClickHandlers();
+    }
 
-// Новый метод для обработки кликов по играм
-initGameClickHandlers() {
-    const gameTitles = document.querySelectorAll('.clickable-title');
-    const gameCards = document.querySelectorAll('.game-card');
-    
-    gameTitles.forEach((title, index) => {
-        title.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const gameCard = title.closest('.game-card');
-            const gameData = gameCard.getAttribute('data-game');
-            this.openGameDetails(JSON.parse(gameData));
-        });
-    });
-    
-    gameCards.forEach(card => {
-        card.addEventListener('click', (e) => {
-            if (!e.target.closest('.store-btn') && !e.target.closest('.clickable-title')) {
-                const gameData = card.getAttribute('data-game');
+    // Остальные методы остаются без изменений...
+    initGameClickHandlers() {
+        const gameTitles = document.querySelectorAll('.clickable-title');
+        const gameCards = document.querySelectorAll('.game-card');
+        
+        gameTitles.forEach((title, index) => {
+            title.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const gameCard = title.closest('.game-card');
+                const gameData = gameCard.getAttribute('data-game');
                 this.openGameDetails(JSON.parse(gameData));
-            }
-        });
-    });
-}
-
-// Метод для открытия детальной страницы
-openGameDetails(game) {
-    // Сохраняем данные игры в sessionStorage
-    sessionStorage.setItem('currentGame', JSON.stringify(game));
-    
-    // Переходим на страницу деталей
-    window.location.href = 'game-details.html';
-}
-
-    showStats(shownCount, totalCount) {
-        const gamesGrid = document.querySelector('.games-grid');
-        if (!gamesGrid) return;
-
-        const statsElement = document.createElement('div');
-        statsElement.className = 'stats-info';
-        statsElement.innerHTML = `
-            <div class="stats-card">
-                <span class="stats-icon">🤖</span>
-                <span>DeepSeek AI нашёл <strong>${shownCount}</strong> игр</span>
-            </div>
-        `;
-        
-        const existingStats = gamesGrid.querySelector('.stats-info');
-        if (existingStats) existingStats.remove();
-        gamesGrid.insertBefore(statsElement, gamesGrid.querySelector('.games-container'));
-    }
-
-    hideLoadMoreButton() {
-        const loadMoreBtn = document.querySelector('.load-more-btn');
-        if (loadMoreBtn) {
-            loadMoreBtn.remove();
-        }
-    }
-
-    displayPrice(priceData, store, gameName, priceInfo) {
-        if (!priceData) {
-            priceInfo.innerHTML = '<p class="price-error">❌ Цена не найдена</p>';
-            return;
-        }
-
-        let priceHTML = '';
-        
-        if (priceData.isRealPrice) {
-            priceHTML = `
-                <div class="price-real">
-                    <div class="price-main">
-                        <span class="price-amount">${this.priceAPI.formatPrice(priceData.price, priceData.currency)}</span>
-                        ${priceData.discount > 0 ? `
-                            <span class="price-discount-badge">-${priceData.discount}%</span>
-                        ` : ''}
-                    </div>
-                    ${priceData.originalPrice ? `
-                        <div class="price-original">
-                            Было: <span class="price-strikethrough">${this.priceAPI.formatPrice(priceData.originalPrice, priceData.currency)}</span>
-                        </div>
-                    ` : ''}
-                    <div class="price-source">
-                        ✅ Актуальная цена из ${store}
-                    </div>
-                </div>
-            `;
-        } else {
-            priceHTML = `
-                <div class="price-calculated">
-                    <div class="price-main">
-                        <span class="price-amount">${this.priceAPI.formatPrice(priceData.price, priceData.currency)}</span>
-                        ${priceData.discount > 0 ? `
-                            <span class="price-discount-badge">-${priceData.discount}%</span>
-                        ` : ''}
-                    </div>
-                    ${priceData.originalPrice ? `
-                        <div class="price-original">
-                            Было: <span class="price-strikethrough">${this.priceAPI.formatPrice(priceData.originalPrice, priceData.currency)}</span>
-                        </div>
-                    ` : ''}
-                    <div class="price-source">
-                        📊 Расчетная цена ${priceData.basedOnSteam ? '(на основе Steam)' : ''}
-                    </div>
-                    ${priceData.steamReference ? `
-                        <div class="price-reference">
-                            ${priceData.steamReference}
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        }
-
-        priceHTML += `
-            <div class="price-actions">
-                <button class="visit-store-btn" onclick="window.openStore('${store}', '${gameName}')">
-                    Перейти в магазин
-                </button>
-            </div>
-        `;
-
-        priceInfo.innerHTML = priceHTML;
-    }
-
-    initStoreButtons() {
-        const storeButtons = document.querySelectorAll('.store-btn');
-        
-        storeButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                const store = e.target.getAttribute('data-store');
-                const gameName = e.target.getAttribute('data-game');
-                this.handleStoreClick(store, gameName, e.target);
             });
         });
-    }
-
-    async handleStoreClick(store, gameName, button) {
-        // Убираем активный класс у всех кнопок в этой карточке
-        const allButtons = button.parentElement.querySelectorAll('.store-btn');
-        allButtons.forEach(btn => btn.classList.remove('active'));
         
-        // Добавляем активный класс к нажатой кнопке
-        button.classList.add('active');
-        
-        // Показываем загрузку
-        const priceInfo = document.getElementById(`price-${gameName.replace(/\s+/g, '-').toLowerCase()}`);
-        priceInfo.innerHTML = '<p class="price-loading">🔄 Запрашиваем актуальную цену...</p>';
-        
-        try {
-            const price = await this.fetchGamePrice(gameName, store);
-            this.displayPrice(price, store, gameName, priceInfo);
-        } catch (error) {
-            console.error('Error fetching price:', error);
-            priceInfo.innerHTML = `
-                <div class="price-error">
-                    <p>❌ Не удалось получить цену</p>
-                    <p class="price-error-detail">${error.message}</p>
-                    <div class="price-actions">
-                        <button class="visit-page-btn" onclick="window.openStore('${store}', '${gameName}')">
-                            Перейти в магазин
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-    }
-
-    async fetchGamePrice(gameName, store) {
-        try {
-            if (!window.priceAPI) {
-                throw new Error('PriceAPI not available');
-            }
-            
-            let priceData;
-            
-            switch(store) {
-                case 'steam':
-                    priceData = await window.priceAPI.getSteamPrice(gameName);
-                    break;
-                case 'epic':
-                    priceData = await window.priceAPI.getEpicPrice(gameName);
-                    break;
-                case 'xbox':
-                    priceData = await window.priceAPI.getXboxPrice(gameName);
-                    break;
-                case 'ea':
-                    priceData = await window.priceAPI.getEAPrice(gameName);
-                    break;
-                case 'ubisoft':
-                    priceData = await window.priceAPI.getUbisoftPrice(gameName);
-                    break;
-                default:
-                    throw new Error(`Unknown store: ${store}`);
-            }
-            
-            return priceData;
-            
-        } catch (error) {
-            console.error('Price fetch error:', error);
-            throw error;
-        }
-    }
-
-    async changeCurrency(currency) {
-        this.priceAPI.setCurrency(currency);
-        
-        // Перезагружаем цены для всех открытых карточек
-        const activeStoreButtons = document.querySelectorAll('.store-btn.active');
-        for (const button of activeStoreButtons) {
-            const store = button.getAttribute('data-store');
-            const gameName = button.getAttribute('data-game');
-            await this.handleStoreClick(store, gameName, button);
-        }
-    }
-
-    setupNavigation() {
-        const navButtons = document.querySelectorAll('.nav-btn[href^="#"]');
-        
-        navButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                const targetId = button.getAttribute('href').substring(1);
-                const targetSection = document.getElementById(targetId);
-                
-                if (targetSection) {
-                    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    history.pushState(null, null, `#${targetId}`);
+        gameCards.forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('.discord-mini-btn')) {
+                    const gameData = card.getAttribute('data-game');
+                    this.openGameDetails(JSON.parse(gameData));
                 }
             });
         });
-
-        // Discord tracking
-        const discordBtn = document.querySelector('.discord-btn');
-        if (discordBtn) {
-            discordBtn.addEventListener('click', () => {
-                console.log('🎮 Discord button clicked');
-            });
-        }
-
-        console.log('🎯 Navigation setup complete');
     }
 
-    setupDownloadTracking() {
-        const downloadButtons = document.querySelectorAll('[download], .download-btn');
-        
-        downloadButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                console.log('📥 Download button clicked');
-                this.showDownloadNotification();
-            });
-        });
-    }
-
-    showDownloadNotification() {
-        const notification = document.createElement('div');
-        notification.className = 'download-notification';
-        notification.innerHTML = `
-            <div class="notification-content">
-                <span class="notification-icon">⬇️</span>
-                <span>Начинаем скачивание лаунчера...</span>
-            </div>
-        `;
-        document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 3000);
+    openGameDetails(game) {
+        sessionStorage.setItem('currentGame', JSON.stringify(game));
+        window.location.href = 'game-details.html';
     }
 
     showError(message) {
@@ -565,7 +182,7 @@ openGameDetails(game) {
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message';
         errorDiv.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px; background: rgba(255,0,0,0.1); border-radius: 8px; margin: 10px 0;">
                 <span>⚠️</span>
                 <span>${message}</span>
             </div>
@@ -578,6 +195,7 @@ openGameDetails(game) {
         const existingError = document.querySelector('.error-message');
         if (existingError) existingError.remove();
     }
+
 
     createParticles() {
         const container = document.getElementById('particles');

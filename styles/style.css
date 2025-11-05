@@ -3149,3 +3149,86 @@ input:focus, textarea:focus, select:focus {
 .price-main-detailed {
     display: none;
 }
+/* Стили для мини-версии Discord кнопки в карточках игр */
+.discord-price-mini {
+    background: rgba(88, 101, 242, 0.1);
+    border: 1px solid rgba(88, 101, 242, 0.3);
+    border-radius: 12px;
+    padding: 15px;
+    margin: 15px 0;
+    text-align: center;
+}
+
+.discord-mini-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.discord-mini-icon {
+    font-size: 1.2rem;
+}
+
+.discord-mini-text {
+    font-weight: 600;
+    color: var(--text-white);
+}
+
+.discord-mini-btn {
+    display: block;
+    background: linear-gradient(45deg, #5865f2, #4752c4);
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.discord-mini-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(88, 101, 242, 0.4);
+}
+
+.price-note {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    margin-top: 8px;
+}
+
+/* Анимация для частиц */
+@keyframes floatParticle {
+    0% {
+        transform: translateY(0) translateX(0);
+    }
+    50% {
+        transform: translateY(-20px) translateX(10px);
+    }
+    100% {
+        transform: translateY(0) translateX(0);
+    }
+}
+
+/* Улучшенные стили для карточек игр */
+.game-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(14, 165, 233, 0.2);
+}
+
+.clickable-title {
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.clickable-title:hover {
+    color: var(--primary-blue);
+}
