@@ -21,29 +21,67 @@ class GameDetailsPage {
         }
 
         this.currentGame = JSON.parse(gameData);
-        await this.findSteamAppId();
-        await this.loadSteamGameData();
-        this.displayGameDetails();
+        console.log('🎮 Загружена игра:', this.currentGame);
+        
+        // Показываем базовые данные из AI
+        this.displayBasicInfo();
+        
+        // Загружаем Steam данные
+        await this.loadSteamData();
         this.loadAllPrices();
+    }
+
+    displayBasicInfo() {
+        document.getElementById('detailGameTitle').textContent = this.currentGame.name;
+        document.getElementById('detailMatchScore').textContent = Math.round(this.currentGame.moodMatch * 100) + '%';
+        document.getElementById('detailGenre').textContent = this.currentGame.genre;
+        document.getElementById('detailPlatforms').textContent = this.currentGame.platforms?.join(', ') || 'PC';
+        document.getElementById('detailPlaytime').textContent = this.currentGame.playtime;
+        document.getElementById('detailVibe').textContent = this.currentGame.vibe;
+        document.getElementById('detailDescription').textContent = this.currentGame.description;
+        document.getElementById('detailReason').textContent = this.currentGame.whyPerfect;
+    }
+
+    async loadSteamData() {
+        try {
+            // 1. Ищем Steam App ID
+            await this.findSteamAppId();
+            
+            // 2. Загружаем данные игры
+            if (this.steamAppId) {
+                await this.loadSteamGameDetails();
+            } else {
+                console.log('Steam App ID не найден');
+                this.showSteamDataUnavailable();
+            }
+            
+        } catch (error) {
+            console.error('Ошибка загрузки Steam данных:', error);
+            this.showSteamDataUnavailable();
+        }
     }
 
     async findSteamAppId() {
         try {
-            // Используем Steam API для поиска игры
-            const response = await fetch(`https://api.steampowered.com/ISteamApps/GetAppList/v2/`);
-            if (!response.ok) throw new Error('Steam API недоступен');
+            // Используем Steam Web API (не требует ключа для получения списка игр)
+            const response = await fetch('https://api.steampowered.com/ISteamApps/GetAppList/v2/');
+            
+            if (!response.ok) {
+                throw new Error(`Steam API error: ${response.status}`);
+            }
             
             const data = await response.json();
             const apps = data.applist.apps;
             
-            // Ищем игру по названию (точное или частичное совпадение)
+            // Поиск по точному или частичному совпадению
             const foundApp = apps.find(app => 
+                app.name.toLowerCase() === this.currentGame.name.toLowerCase() ||
                 app.name.toLowerCase().includes(this.currentGame.name.toLowerCase()) ||
                 this.currentGame.name.toLowerCase().includes(app.name.toLowerCase())
             );
             
             this.steamAppId = foundApp ? foundApp.appid : null;
-            console.log('Steam App ID:', this.steamAppId);
+            console.log('🔍 Найден Steam App ID:', this.steamAppId);
             
         } catch (error) {
             console.error('Ошибка поиска Steam App ID:', error);
@@ -51,87 +89,117 @@ class GameDetailsPage {
         }
     }
 
-    async loadSteamGameData() {
-        if (!this.steamAppId) {
-            this.generateFallbackData();
-            return;
-        }
-
+    async loadSteamGameDetails() {
         try {
+            // Steam Store API - публичный доступ, не требует ключа
             const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${this.steamAppId}&l=russian`);
-            if (!response.ok) throw new Error('Steam Store API недоступен');
+            
+            if (!response.ok) {
+                throw new Error(`Steam Store API error: ${response.status}`);
+            }
             
             const data = await response.json();
             const gameData = data[this.steamAppId];
             
             if (gameData && gameData.success) {
                 this.enrichWithSteamData(gameData.data);
+                console.log('✅ Steam данные успешно загружены');
             } else {
-                this.generateFallbackData();
+                throw new Error('Steam данные недоступны для этой игры');
             }
             
         } catch (error) {
-            console.error('Ошибка загрузки данных Steam:', error);
-            this.generateFallbackData();
+            console.error('Ошибка загрузки деталей игры:', error);
+            throw error;
         }
     }
 
     enrichWithSteamData(steamData) {
-        // Обогащаем данные из Steam API
+        // Обновляем данные из Steam
         if (steamData.name) {
-            this.currentGame.name = steamData.name;
+            document.getElementById('detailGameTitle').textContent = steamData.name;
         }
         
         if (steamData.genres) {
-            this.currentGame.genre = steamData.genres.map(genre => genre.description).join(', ');
+            const genres = steamData.genres.map(genre => genre.description);
+            document.getElementById('detailGenre').textContent = genres.join(', ');
         }
         
         if (steamData.platforms) {
             const platforms = [];
-            if (steamData.platforms.windows) platforms.push('PC');
+            if (steamData.platforms.windows) platforms.push('Windows');
             if (steamData.platforms.mac) platforms.push('Mac');
             if (steamData.platforms.linux) platforms.push('Linux');
-            this.currentGame.platforms = platforms;
+            document.getElementById('detailPlatforms').textContent = platforms.join(', ');
         }
         
         if (steamData.short_description) {
-            this.currentGame.description = steamData.short_description;
+            document.getElementById('detailDescription').textContent = steamData.short_description;
         }
         
         if (steamData.header_image) {
-            this.currentGame.imageUrl = steamData.header_image;
+            this.loadGameImage(steamData.header_image);
         }
         
-        // Системные требования из Steam
+        // Системные требования
         if (steamData.pc_requirements) {
-            this.currentGame.requirements = this.parseSteamRequirements(steamData.pc_requirements);
+            this.displaySteamRequirements(steamData.pc_requirements);
         }
         
         // Дополнительная информация
         if (steamData.categories) {
-            this.currentGame.features = steamData.categories.map(cat => cat.description);
+            this.displaySteamFeatures(steamData.categories);
         }
         
         if (steamData.release_date && !steamData.release_date.coming_soon) {
-            this.currentGame.releaseDate = steamData.release_date.date;
+            this.displayReleaseDate(steamData.release_date.date);
         }
     }
 
-    parseSteamRequirements(requirements) {
-        const result = { minimum: {}, recommended: {} };
+    loadGameImage(imageUrl) {
+        const imageElement = document.getElementById('detailGameImage');
+        const placeholder = document.getElementById('imagePlaceholder');
         
-        if (requirements.minimum) {
-            result.minimum = this.extractRequirements(requirements.minimum);
-        }
+        imageElement.onload = () => {
+            imageElement.style.display = 'block';
+            placeholder.style.display = 'none';
+        };
         
-        if (requirements.recommended) {
-            result.recommended = this.extractRequirements(requirements.recommended);
-        }
+        imageElement.onerror = () => {
+            console.log('Ошибка загрузки изображения');
+            placeholder.innerHTML = `
+                <span class="placeholder-icon">🎮</span>
+                <span>${this.currentGame.name}</span>
+            `;
+        };
         
-        return result;
+        imageElement.src = imageUrl;
     }
 
-    extractRequirements(htmlText) {
+    displaySteamRequirements(requirements) {
+        const minReq = this.parseRequirements(requirements.minimum);
+        const recReq = this.parseRequirements(requirements.recommended);
+        
+        if (minReq) {
+            document.getElementById('minOS').textContent = minReq.os || 'Информация отсутствует';
+            document.getElementById('minCPU').textContent = minReq.cpu || 'Информация отсутствует';
+            document.getElementById('minRAM').textContent = minReq.ram || 'Информация отсутствует';
+            document.getElementById('minGPU').textContent = minReq.gpu || 'Информация отсутствует';
+            document.getElementById('minStorage').textContent = minReq.storage || 'Информация отсутствует';
+        }
+        
+        if (recReq) {
+            document.getElementById('recOS').textContent = recReq.os || 'Информация отсутствует';
+            document.getElementById('recCPU').textContent = recReq.cpu || 'Информация отсутствует';
+            document.getElementById('recRAM').textContent = recReq.ram || 'Информация отсутствует';
+            document.getElementById('recGPU').textContent = recReq.gpu || 'Информация отсутствует';
+            document.getElementById('recStorage').textContent = recReq.storage || 'Информация отсутствует';
+        }
+    }
+
+    parseRequirements(htmlText) {
+        if (!htmlText) return null;
+        
         const requirements = {};
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlText;
@@ -144,242 +212,29 @@ class GameDetailsPage {
         const memoryMatch = text.match(/Memory:\s*([^\n\r<]+)/i);
         const graphicsMatch = text.match(/Graphics:\s*([^\n\r<]+)/i);
         const storageMatch = text.match(/Storage:\s*([^\n\r<]+)/i);
+        const directXMatch = text.match(/DirectX:\s*([^\n\r<]+)/i);
         
         if (osMatch) requirements.os = osMatch[1].trim();
         if (processorMatch) requirements.cpu = processorMatch[1].trim();
         if (memoryMatch) requirements.ram = memoryMatch[1].trim();
         if (graphicsMatch) requirements.gpu = graphicsMatch[1].trim();
         if (storageMatch) requirements.storage = storageMatch[1].trim();
+        if (directXMatch) requirements.directx = directXMatch[1].trim();
         
-        return requirements;
+        return Object.keys(requirements).length > 0 ? requirements : null;
     }
 
-    generateFallbackData() {
-        // Генерируем данные на основе жанра и названия игры
-        const genre = this.currentGame.genre.toLowerCase();
-        
-        // Изображение по умолчанию через Unsplash
-        this.currentGame.imageUrl = `https://source.unsplash.com/800x450/?${encodeURIComponent(this.currentGame.name + ' game')}`;
-        
-        // Системные требования по жанру
-        this.currentGame.requirements = this.generateRequirementsByGenre(genre);
-        
-        // Дополнительные фичи
-        this.currentGame.features = this.generateFeaturesByGenre(genre);
-    }
-
-    generateRequirementsByGenre(genre) {
-        let minReq, recReq;
-        
-        if (genre.includes('инди') || genre.includes('казуал') || genre.includes('пиксель')) {
-            minReq = { 
-                os: 'Windows 7/8/10/11', 
-                cpu: 'Intel Core i3 или AMD эквивалент', 
-                ram: '4 GB RAM', 
-                gpu: 'Intel HD Graphics 4000 или лучше', 
-                storage: '2 GB доступного места' 
-            };
-            recReq = { 
-                os: 'Windows 10/11', 
-                cpu: 'Intel Core i5 или AMD Ryzen 3', 
-                ram: '8 GB RAM', 
-                gpu: 'NVIDIA GTX 750 Ti или AMD Radeon R7 360', 
-                storage: '4 GB доступного места' 
-            };
-        } else if (genre.includes('страте') || genre.includes('симулятор') || genre.includes('тактич')) {
-            minReq = { 
-                os: 'Windows 8/10/11', 
-                cpu: 'Intel Core i5-3470 или AMD FX-8350', 
-                ram: '8 GB RAM', 
-                gpu: 'NVIDIA GeForce GTX 950 или AMD Radeon R7 265', 
-                storage: '15 GB доступного места' 
-            };
-            recReq = { 
-                os: 'Windows 10/11', 
-                cpu: 'Intel Core i7-4770K или AMD Ryzen 5 1500X', 
-                ram: '16 GB RAM', 
-                gpu: 'NVIDIA GeForce GTX 1060 или AMD Radeon RX 580', 
-                storage: '20 GB доступного места' 
-            };
-        } else if (genre.includes('экшен') || genre.includes('шутер') || genre.includes('приключ')) {
-            minReq = { 
-                os: 'Windows 10 64-bit', 
-                cpu: 'Intel Core i5-4460 или AMD Ryzen 3 1200', 
-                ram: '8 GB RAM', 
-                gpu: 'NVIDIA GeForce GTX 960 или AMD Radeon R9 280', 
-                storage: '50 GB доступного места' 
-            };
-            recReq = { 
-                os: 'Windows 10/11 64-bit', 
-                cpu: 'Intel Core i7-4770K или AMD Ryzen 5 1600', 
-                ram: '16 GB RAM', 
-                gpu: 'NVIDIA GeForce RTX 2060 или AMD Radeon RX 5700', 
-                storage: '50 GB доступного места' 
-            };
-        } else if (genre.includes('ролевая') || genre.includes('rpg') || genre.includes('открытый мир')) {
-            minReq = { 
-                os: 'Windows 10 64-bit', 
-                cpu: 'Intel Core i5-2500K или AMD Ryzen 3 1200', 
-                ram: '8 GB RAM', 
-                gpu: 'NVIDIA GeForce GTX 970 или AMD Radeon R9 290', 
-                storage: '70 GB доступного места' 
-            };
-            recReq = { 
-                os: 'Windows 10/11 64-bit', 
-                cpu: 'Intel Core i7-4770K или AMD Ryzen 5 1500X', 
-                ram: '16 GB RAM', 
-                gpu: 'NVIDIA GeForce RTX 2070 или AMD Radeon RX 5700 XT', 
-                storage: '70 GB доступного места' 
-            };
-        } else {
-            // Требования по умолчанию
-            minReq = { 
-                os: 'Windows 10 64-bit', 
-                cpu: 'Intel Core i5-4460 или AMD эквивалент', 
-                ram: '8 GB RAM', 
-                gpu: 'NVIDIA GeForce GTX 960 или AMD Radeon R9 280', 
-                storage: '20 GB доступного места' 
-            };
-            recReq = { 
-                os: 'Windows 10/11 64-bit', 
-                cpu: 'Intel Core i7-4770K или AMD Ryzen 5 1600', 
-                ram: '16 GB RAM', 
-                gpu: 'NVIDIA GeForce RTX 2060 или AMD Radeon RX 5700', 
-                storage: '20 GB доступного места' 
-            };
-        }
-
-        return { minimum: minReq, recommended: recReq };
-    }
-
-    generateFeaturesByGenre(genre) {
-        const features = [];
-        
-        if (genre.includes('мультиплеер') || genre.includes('кооператив')) {
-            features.push('Мультиплеер', 'Кооператив');
-        }
-        
-        if (genre.includes('одиноч')) {
-            features.push('Одиночная игра');
-        }
-        
-        if (genre.includes('открытый мир')) {
-            features.push('Открытый мир');
-        }
-        
-        if (genre.includes('песочница')) {
-            features.push('Песочница');
-        }
-        
-        if (genre.includes('сюжет') || genre.includes('история')) {
-            features.push('Богатый сюжет');
-        }
-        
-        if (genre.includes('стратегия') || genre.includes('тактика')) {
-            features.push('Тактический геймплей');
-        }
-        
-        if (genre.includes('выживание')) {
-            features.push('Выживание', 'Крафтинг');
-        }
-        
-        return features.length > 0 ? features : ['Захватывающий геймплей', 'Качественная графика'];
-    }
-
-    displayGameDetails() {
-        // Основная информация
-        document.getElementById('detailGameTitle').textContent = this.currentGame.name;
-        document.getElementById('detailMatchScore').textContent = Math.round(this.currentGame.moodMatch * 100) + '%';
-        document.getElementById('detailGenre').textContent = this.currentGame.genre;
-        document.getElementById('detailPlatforms').textContent = this.currentGame.platforms?.join(', ') || 'PC';
-        document.getElementById('detailPlaytime').textContent = this.currentGame.playtime;
-        document.getElementById('detailVibe').textContent = this.currentGame.vibe;
-        document.getElementById('detailDescription').textContent = this.currentGame.description;
-        document.getElementById('detailReason').textContent = this.currentGame.whyPerfect;
-
-        // Загружаем изображение
-        this.loadGameImage();
-
-        // Отображаем системные требования
-        this.displayRequirements();
-
-        // Отображаем дополнительные фичи
-        this.displayFeatures();
-    }
-
-    async loadGameImage() {
-        const imageElement = document.getElementById('detailGameImage');
-        const placeholder = document.getElementById('imagePlaceholder');
-        
-        if (this.currentGame.imageUrl) {
-            imageElement.onload = () => {
-                imageElement.style.display = 'block';
-                placeholder.style.display = 'none';
-            };
-            
-            imageElement.onerror = () => {
-                this.loadFallbackImage(placeholder);
-            };
-            
-            imageElement.src = this.currentGame.imageUrl;
-        } else {
-            this.loadFallbackImage(placeholder);
-        }
-    }
-
-    async loadFallbackImage(placeholder) {
-        try {
-            // Пробуем найти изображение через Unsplash
-            const searchQuery = encodeURIComponent(this.currentGame.name + ' video game');
-            const response = await fetch(`https://source.unsplash.com/800x450/?${searchQuery}`);
-            
-            if (response.ok) {
-                const imageElement = document.getElementById('detailGameImage');
-                imageElement.src = response.url;
-                imageElement.style.display = 'block';
-                placeholder.style.display = 'none';
-            } else {
-                throw new Error('Unsplash недоступен');
-            }
-        } catch (error) {
-            // Фолбэк заглушка
-            placeholder.innerHTML = `
-                <span class="placeholder-icon">🎮</span>
-                <span>${this.currentGame.name}</span>
-                <small>Изображение не найдено</small>
-            `;
-        }
-    }
-
-    displayRequirements() {
-        const requirements = this.currentGame.requirements;
-        
-        if (requirements && requirements.minimum) {
-            document.getElementById('minOS').textContent = requirements.minimum.os || 'Информация отсутствует';
-            document.getElementById('minCPU').textContent = requirements.minimum.cpu || 'Информация отсутствует';
-            document.getElementById('minRAM').textContent = requirements.minimum.ram || 'Информация отсутствует';
-            document.getElementById('minGPU').textContent = requirements.minimum.gpu || 'Информация отсутствует';
-            document.getElementById('minStorage').textContent = requirements.minimum.storage || 'Информация отсутствует';
-        }
-        
-        if (requirements && requirements.recommended) {
-            document.getElementById('recOS').textContent = requirements.recommended.os || 'Информация отсутствует';
-            document.getElementById('recCPU').textContent = requirements.recommended.cpu || 'Информация отсутствует';
-            document.getElementById('recRAM').textContent = requirements.recommended.ram || 'Информация отсутствует';
-            document.getElementById('recGPU').textContent = requirements.recommended.gpu || 'Информация отсутствует';
-            document.getElementById('recStorage').textContent = requirements.recommended.storage || 'Информация отсутствует';
-        }
-    }
-
-    displayFeatures() {
+    displaySteamFeatures(categories) {
         const featuresContainer = document.getElementById('gameFeatures');
-        if (!featuresContainer) return;
+        if (!featuresContainer || !categories) return;
         
-        if (this.currentGame.features && this.currentGame.features.length > 0) {
+        const features = categories.map(cat => cat.description);
+        
+        if (features.length > 0) {
             featuresContainer.innerHTML = `
                 <h3>🌟 Особенности</h3>
                 <div class="features-grid">
-                    ${this.currentGame.features.map(feature => `
+                    ${features.map(feature => `
                         <div class="feature-tag">${feature}</div>
                     `).join('')}
                 </div>
@@ -387,42 +242,103 @@ class GameDetailsPage {
         }
     }
 
+    displayReleaseDate(date) {
+        const featuresContainer = document.getElementById('gameFeatures');
+        if (!featuresContainer) return;
+        
+        let existingContent = featuresContainer.innerHTML;
+        if (!existingContent.includes('🌟 Особенности')) {
+            existingContent = `<h3>🌟 Особенности</h3><div class="features-grid">`;
+        }
+        
+        featuresContainer.innerHTML = existingContent.replace('</div>', 
+            `<div class="feature-tag release-date">📅 ${date}</div></div>`
+        );
+    }
+
+    showSteamDataUnavailable() {
+        const placeholder = document.getElementById('imagePlaceholder');
+        placeholder.innerHTML = `
+            <span class="placeholder-icon">🎮</span>
+            <span>${this.currentGame.name}</span>
+            <small>Steam данные недоступны</small>
+        `;
+        
+        // Показываем базовые системные требования
+        this.displayBasicRequirements();
+    }
+
+    displayBasicRequirements() {
+        // Минимальные системные требования по умолчанию
+        document.getElementById('minOS').textContent = 'Windows 10';
+        document.getElementById('minCPU').textContent = 'Intel Core i5 или аналогичный';
+        document.getElementById('minRAM').textContent = '8 GB RAM';
+        document.getElementById('minGPU').textContent = 'NVIDIA GTX 960 или аналогичная';
+        document.getElementById('minStorage').textContent = '20 GB доступного места';
+        
+        // Рекомендуемые системные требования по умолчанию
+        document.getElementById('recOS').textContent = 'Windows 10/11';
+        document.getElementById('recCPU').textContent = 'Intel Core i7 или аналогичный';
+        document.getElementById('recRAM').textContent = '16 GB RAM';
+        document.getElementById('recGPU').textContent = 'NVIDIA RTX 2060 или аналогичная';
+        document.getElementById('recStorage').textContent = '20 GB доступного места';
+    }
+
     async loadAllPrices() {
         const storesGrid = document.getElementById('detailedStores');
-        storesGrid.innerHTML = '<div class="loading-prices">🔄 Загружаем цены из всех магазинов...</div>';
+        storesGrid.innerHTML = '<div class="loading-prices">🔄 Загружаем цены...</div>';
 
-        const stores = ['steam', 'epic', 'xbox', 'ea', 'ubisoft'];
-        const prices = [];
+        try {
+            const stores = ['steam', 'epic', 'xbox', 'ea', 'ubisoft'];
+            const pricePromises = stores.map(store => 
+                this.fetchStorePrice(store)
+            );
 
-        // Загружаем цены для всех магазинов параллельно
-        const pricePromises = stores.map(store => 
-            this.fetchStorePrice(store).catch(error => {
-                console.error(`Error loading ${store} price:`, error);
-                return { store, price: null };
-            })
-        );
+            const results = await Promise.allSettled(pricePromises);
+            const prices = results.map(result => 
+                result.status === 'fulfilled' ? result.value : { store: 'unknown', price: null }
+            );
 
-        const results = await Promise.all(pricePromises);
-        
-        // Отображаем цены
-        this.displayAllPrices(results);
+            this.displayAllPrices(prices);
+        } catch (error) {
+            console.error('Ошибка загрузки цен:', error);
+            storesGrid.innerHTML = '<div class="price-error">❌ Не удалось загрузить цены</div>';
+        }
     }
 
     async fetchStorePrice(store) {
-        const price = await this.priceAPI.getSteamPrice(this.currentGame.name);
-        return { store, price };
+        try {
+            let priceData;
+            switch(store) {
+                case 'steam':
+                    priceData = await this.priceAPI.getSteamPrice(this.currentGame.name);
+                    break;
+                case 'epic':
+                    priceData = await this.priceAPI.getEpicPrice(this.currentGame.name);
+                    break;
+                case 'xbox':
+                    priceData = await this.priceAPI.getXboxPrice(this.currentGame.name);
+                    break;
+                case 'ea':
+                    priceData = await this.priceAPI.getEAPrice(this.currentGame.name);
+                    break;
+                case 'ubisoft':
+                    priceData = await this.priceAPI.getUbisoftPrice(this.currentGame.name);
+                    break;
+                default:
+                    priceData = null;
+            }
+            return { store, price: priceData };
+        } catch (error) {
+            console.error(`Ошибка загрузки цены для ${store}:`, error);
+            return { store, price: null };
+        }
     }
 
     displayAllPrices(prices) {
         const storesGrid = document.getElementById('detailedStores');
         
-        // Сортируем магазины: сначала с ценами, потом без
-        const availablePrices = prices.filter(p => p.price);
-        const unavailablePrices = prices.filter(p => !p.price);
-        
-        const sortedPrices = [...availablePrices, ...unavailablePrices];
-        
-        storesGrid.innerHTML = sortedPrices.map(({ store, price }) => {
+        storesGrid.innerHTML = prices.map(({ store, price }) => {
             if (!price) {
                 return `
                     <div class="store-price-card unavailable">
@@ -581,7 +497,6 @@ class GameDetailsPage {
     }
 }
 
-// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
     window.gameDetailsPage = new GameDetailsPage();
 });
