@@ -170,23 +170,25 @@ initCurrentCurrency() {
         return;
     }
 
-    console.log('🔍 Search query:', query);
+    console.log('🔍 Starting DeepSeek search for:', query);
     this.setLoading(true);
     this.hideError();
 
     try {
         const gameAI = new GameSearchAI(CONFIG.DEEPSEEK_API_KEY);
         const results = await gameAI.searchGames(query);
+        
+        // Добавляем флаг hasMore для кнопки "Еще"
+        results.hasMore = false; // DeepSeek всегда возвращает 12 игр
+        results.totalGames = results.games.length;
+        
         this.displayResults(results);
         
-        // Показываем уведомление если используется fallback
-        if (results.analysis.reasoning.includes('популярные игры')) {
-            this.showError('⚠️ Используем локальную базу игр. AI временно недоступен.');
-        }
+        console.log('✅ DeepSeek search completed successfully');
         
     } catch (error) {
-        console.error('❌ Search error:', error);
-        this.showError('❌ Произошла ошибка при поиске игр');
+        console.error('❌ DeepSeek search error:', error);
+        this.showError(`❌ ${error.message}`);
     } finally {
         this.setLoading(false);
     }
@@ -249,59 +251,97 @@ initCurrentCurrency() {
     }
 
     displayGames(games) {
-        if (!this.gamesContainer) return;
+    if (!this.gamesContainer) return;
 
-        this.gamesContainer.innerHTML = games.map((game, index) => `
-            <div class="game-card fade-in-up" style="animation-delay: ${index * 0.1}s">
-                <div class="game-header">
-                    <div class="game-title-section">
-                        <h4 class="game-title">${game.name}</h4>
-                        <div class="game-meta">
-                            <span class="game-genre">${game.genre}</span>
-                            ${game.platforms ? `<span class="game-platforms">${game.platforms.slice(0, 3).join(', ')}</span>` : ''}
-                        </div>
-                    </div>
-                    <div class="match-score">
-                        <div class="score-circle">${Math.round(game.moodMatch * 100)}%</div>
-                        <div class="score-label">совпадение</div>
+    this.gamesContainer.innerHTML = games.map((game, index) => `
+        <div class="game-card fade-in-up" style="animation-delay: ${index * 0.1}s">
+            <div class="game-header">
+                <div class="game-title-section">
+                    <h4 class="game-title">${game.name}</h4>
+                    <div class="game-meta">
+                        <span class="game-genre">${game.genre}</span>
+                        ${game.platforms ? `<span class="game-platforms">${game.platforms.slice(0, 3).join(', ')}</span>` : ''}
                     </div>
                 </div>
-                <p class="game-description">${game.description}</p>
-                <div class="game-details">
-                    <div class="detail-item">
-                        <span class="detail-icon">🕐</span>
-                        <span>${game.playtime}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-icon">🎭</span>
-                        <span>${game.vibe}</span>
-                    </div>
-                </div>
-                <div class="game-reason">
-                    <div class="reason-title">🎯 Почему идеально подходит:</div>
-                    <p class="reason-text">${game.whyPerfect}</p>
-                </div>
-                
-                <!-- БЛОК МАГАЗИНОВ И ЦЕН -->
-                <div class="stores-container">
-                    <h4>🛒 Где купить:</h4>
-                    <div class="store-buttons">
-                        <button class="store-btn" data-store="steam" data-game="${game.name}">Steam</button>
-                        <button class="store-btn" data-store="epic" data-game="${game.name}">Epic Games</button>
-                        <button class="store-btn" data-store="xbox" data-game="${game.name}">XBOX</button>
-                        <button class="store-btn" data-store="ea" data-game="${game.name}">EA App</button>
-                        <button class="store-btn" data-store="ubisoft" data-game="${game.name}">Ubisoft</button>
-                    </div>
-                    <div class="price-info" id="price-${game.name.replace(/\s+/g, '-').toLowerCase()}">
-                        <p class="price-loading">Выберите магазин для просмотра цены</p>
-                    </div>
+                <div class="match-score">
+                    <div class="score-circle">${Math.round(game.moodMatch * 100)}%</div>
+                    <div class="score-label">совпадение</div>
                 </div>
             </div>
-        `).join('');
+            <p class="game-description">${game.description}</p>
+            <div class="game-details">
+                <div class="detail-item">
+                    <span class="detail-icon">🕐</span>
+                    <span>${game.playtime}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-icon">🎭</span>
+                    <span>${game.vibe}</span>
+                </div>
+            </div>
+            <div class="game-reason">
+                <div class="reason-title">🎯 Почему идеально подходит:</div>
+                <p class="reason-text">${game.whyPerfect}</p>
+            </div>
+            
+            <!-- БЛОК МАГАЗИНОВ И ЦЕН -->
+            <div class="stores-container">
+                <h4>🛒 Где купить:</h4>
+                <div class="store-buttons">
+                    <button class="store-btn" data-store="steam" data-game="${game.name}">Steam</button>
+                    <button class="store-btn" data-store="epic" data-game="${game.name}">Epic Games</button>
+                    <button class="store-btn" data-store="xbox" data-game="${game.name}">XBOX</button>
+                    <button class="store-btn" data-store="ea" data-game="${game.name}">EA App</button>
+                    <button class="store-btn" data-store="ubisoft" data-game="${game.name}">Ubisoft</button>
+                </div>
+                <div class="price-info" id="price-${game.name.replace(/\s+/g, '-').toLowerCase()}">
+                    <p class="price-loading">Выберите магазин для просмотра цены</p>
+                </div>
+            </div>
+        </div>
+    `).join('');
 
-        // Добавляем обработчики для кнопок магазинов
-        this.initStoreButtons();
+    // Добавляем обработчики для кнопок магазинов
+    this.initStoreButtons();
+}
+
+displayResults(results) {
+    if (!this.resultsSection || !this.gamesContainer || !this.analysisContent) return;
+
+    this.resultsSection.classList.remove('hidden');
+    this.resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    this.displayAIAnalysis(results.analysis);
+    this.displayGames(results.games);
+    this.showStats(results.games.length, results.totalGames);
+    
+    // Убираем кнопку "Еще" так как DeepSeek всегда возвращает 12 игр
+    this.hideLoadMoreButton();
+}
+
+showStats(shownCount, totalCount) {
+    const gamesGrid = document.querySelector('.games-grid');
+    if (!gamesGrid) return;
+
+    const statsElement = document.createElement('div');
+    statsElement.className = 'stats-info';
+    statsElement.innerHTML = `
+        <div class="stats-card">
+            <span class="stats-icon">🤖</span>
+            <span>DeepSeek AI нашёл <strong>${shownCount}</strong> игр</span>
+        </div>
+    `;
+    
+    const existingStats = gamesGrid.querySelector('.stats-info');
+    if (existingStats) existingStats.remove();
+    gamesGrid.insertBefore(statsElement, gamesGrid.querySelector('.games-container'));
+}
+
+hideLoadMoreButton() {
+    const loadMoreBtn = document.querySelector('.load-more-btn');
+    if (loadMoreBtn) {
+        loadMoreBtn.remove();
     }
+}
 
     displayPrice(priceData, store, gameName, priceInfo) {
     if (!priceData) {
@@ -356,7 +396,6 @@ initCurrentCurrency() {
         `;
     }
 
-    // Добавляем кнопку перехода в магазин
     priceHTML += `
         <div class="price-actions">
             <button class="visit-store-btn" onclick="window.openStore('${store}', '${gameName}')">
@@ -366,6 +405,7 @@ initCurrentCurrency() {
     `;
 
     priceInfo.innerHTML = priceHTML;
+
 }
 
     initStoreButtons() {

@@ -1,16 +1,14 @@
 class GameSearchAI {
     constructor(apiKey) {
         this.apiKey = apiKey;
-        this.baseURL = 'https://api.deepseek.com/v1';
+        this.baseURL = 'https://api.deepseek.com/chat/completions';
     }
 
     async searchGames(userQuery) {
         try {
-            console.log('🤖 Starting direct AI search for:', userQuery);
+            console.log('🤖 Starting DeepSeek AI search for:', userQuery);
             
-            const prompt = this.createSearchPrompt(userQuery);
-            
-            const response = await fetch('https://api.deepseek.com/chat/completions', {
+            const response = await fetch(this.baseURL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -21,260 +19,118 @@ class GameSearchAI {
                     messages: [
                         {
                             role: "system",
-                            content: "Ты помощник по подбору игр. Отвечай ТОЛЬКО в valid JSON формате."
+                            content: `Ты эксперт по подбору компьютерных игр. Пользователь описывает, какую игру хочет найти. 
+                            Твоя задача - проанализировать запрос и предложить 12 релевантных игр.
+                            
+                            ОТВЕЧАЙ ТОЛЬКО В ФОРМАТЕ JSON БЕЗ ЛЮБЫХ ДОПОЛНИТЕЛЬНЫХ ТЕКСТОВ И КОММЕНТАРИЕВ!
+                            
+                            Формат ответа:
+                            {
+                                "analysis": {
+                                    "understoodMood": "строка - какое настроение понял из запроса",
+                                    "recommendedStyle": "строка - рекомендуемый стиль игр", 
+                                    "keyFactors": ["фактор1", "фактор2", "фактор3"],
+                                    "reasoning": "строка - объяснение подбора игр"
+                                },
+                                "games": [
+                                    {
+                                        "name": "название игры на русском",
+                                        "genre": "жанр игры",
+                                        "description": "интересное описание 2-3 предложения",
+                                        "moodMatch": 0.95,
+                                        "playtime": "время прохождения",
+                                        "vibe": "атмосфера игры", 
+                                        "whyPerfect": "почему идеально подходит под запрос",
+                                        "platforms": ["PC", "PS5", "XBOX", "Switch"]
+                                    }
+                                ]
+                            }
+                            
+                            ВАЖНО: 
+                            - Верни РОВНО 12 игр
+                            - moodMatch от 0.7 до 0.99
+                            - platforms должны быть реальными
+                            - Описания должны быть уникальными и интересными`
                         },
                         {
                             role: "user", 
-                            content: prompt
+                            content: `Найди игры по запросу: "${userQuery}"`
                         }
                     ],
                     max_tokens: 4000,
-                    temperature: 0.7,
+                    temperature: 0.8,
                     stream: false
                 })
             });
 
-            console.log('📥 Response status:', response.status);
+            console.log('📥 DeepSeek response status:', response.status);
             
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('❌ Direct API error:', response.status, errorText);
-                
-                // Если CORS ошибка, используем fallback
-                if (response.status === 0 || errorText.includes('CORS')) {
-                    return this.getFallbackResponse(userQuery);
-                }
-                
-                throw new Error(`API Error: ${response.status}`);
+                console.error('❌ DeepSeek API error:', response.status, errorText);
+                throw new Error(`DeepSeek API Error: ${response.status}`);
             }
 
             const data = await response.json();
-            console.log('✅ AI Response received');
+            console.log('✅ DeepSeek response received');
             
             if (!data.choices || !data.choices[0]) {
-                throw new Error('Invalid response from AI');
+                throw new Error('Invalid response structure from DeepSeek');
             }
 
             const content = data.choices[0].message.content;
-            return this.parseAIResponse(content);
+            console.log('📝 DeepSeek content length:', content.length);
+
+            const results = this.parseAIResponse(content);
+            
+            // Гарантируем что есть 12 игр
+            if (!results.games || results.games.length === 0) {
+                throw new Error('DeepSeek не вернул ни одной игры');
+            }
+            
+            console.log(`🎯 DeepSeek found ${results.games.length} games`);
+            return results;
             
         } catch (error) {
-            console.error('❌ AI search error:', error);
-            
-            // Всегда возвращаем fallback если ошибка
-            return this.getFallbackResponse(userQuery);
+            console.error('❌ DeepSeek search error:', error);
+            throw new Error(`DeepSeek недоступен: ${error.message}`);
         }
-    }
-
-    getFallbackResponse(userQuery) {
-        console.log('🔄 Using fallback response for:', userQuery);
-        
-        // Анализируем запрос для лучшего fallback
-        const query = userQuery.toLowerCase();
-        
-        let games = [];
-        let analysis = {
-            understoodMood: "Разнообразное настроение",
-            recommendedStyle: "Популярные игры разных жанров",
-            keyFactors: ["качество", "рейтинг", "отзывы"],
-            reasoning: "Подобраны популярные игры на основе вашего запроса"
-        };
-
-        if (query.includes('роле') || query.includes('рпг') || query.includes('сюжет')) {
-            games = [
-                {
-                    name: "The Witcher 3: Wild Hunt",
-                    genre: "RPG",
-                    description: "Эпическая RPG с богатым сюжетом, открытым миром и сложными моральными выборами. Игра получила более 800 наград как лучшая игра года.",
-                    moodMatch: 0.95,
-                    playtime: "100+ часов",
-                    vibe: "Эпическое фэнтези-приключение",
-                    whyPerfect: "Глубокий сюжет, проработанный мир и персонажи, которые запомнятся надолго",
-                    platforms: ["PC", "PS4", "XBOX", "Switch"]
-                },
-                {
-                    name: "Cyberpunk 2077",
-                    genre: "Action-RPG", 
-                    description: "Иммерсивная киберпанк-игра с открытым миром Найт-Сити. Нелинейный сюжет с множеством вариантов развития.",
-                    moodMatch: 0.88,
-                    playtime: "60+ часов",
-                    vibe: "Футуристический нео-нуар",
-                    whyPerfect: "Захватывающий мир будущего, свобода действий и визуальная составляющая",
-                    platforms: ["PC", "PS5", "XBOX Series X"]
-                },
-                {
-                    name: "Elden Ring",
-                    genre: "Action-RPG",
-                    description: "Масштабная dark fantasy игра с огромным открытым миром. Сложные бои и глубокая боевая система.",
-                    moodMatch: 0.85,
-                    playtime: "80+ часов", 
-                    vibe: "Сложное эпическое приключение",
-                    whyPerfect: "Огромный мир для исследования и удовлетворение от победы над сложными боссами",
-                    platforms: ["PC", "PS4", "PS5", "XBOX"]
-                }
-            ];
-            analysis.understoodMood = "Эпическое приключение с глубоким сюжетом";
-            
-        } else if (query.includes('экшен') || query.includes('шутер') || query.includes('стреля')) {
-            games = [
-                {
-                    name: "DOOM Eternal",
-                    genre: "Шутер",
-                    description: "Безумный шутер с быстрым геймплеем и эпическими сражениями с демонами. Одна из лучших игр в жанре.",
-                    moodMatch: 0.92,
-                    playtime: "15-20 часов",
-                    vibe: "Интенсивный адреналиновый экшен",
-                    whyPerfect: "Быстрый темп, мощный саундтрек и удовлетворяющий геймплей",
-                    platforms: ["PC", "PS4", "XBOX", "Switch"]
-                },
-                {
-                    name: "Call of Duty: Warzone",
-                    genre: "Батл-роял",
-                    description: "Бесплатный батл-роял шутер с масштабными битвами на 150 игроков. Постоянно обновляется.",
-                    moodMatch: 0.87,
-                    playtime: "Бесконечно",
-                    vibe: "Командный соревновательный экшен", 
-                    whyPerfect: "Бесплатно, постоянно новый контент и активное комьюнити",
-                    platforms: ["PC", "PS4", "PS5", "XBOX"]
-                },
-                {
-                    name: "Grand Theft Auto V",
-                    genre: "Action-adventure",
-                    description: "Легендарная игра с открытым миром. Три протагониста, бесконечные возможности и GTA Online.",
-                    moodMatch: 0.90,
-                    playtime: "30+ часов (сюжет)",
-                    vibe: "Криминальная сага в открытом мире",
-                    whyPerfect: "Невероятная свобода действий и проработанный мир",
-                    platforms: ["PC", "PS4", "PS5", "XBOX"]
-                }
-            ];
-            analysis.understoodMood = "Динамичный и интенсивный экшен";
-            
-        } else if (query.includes('расслаб') || query.includes('уютн') || query.includes('спокой')) {
-            games = [
-                {
-                    name: "Stardew Valley", 
-                    genre: "Ферма-симулятор",
-                    description: "Расслабляющая игра о жизни в деревне. Фермерство, рыбалка, общение с жителями и восстановление старой фермы.",
-                    moodMatch: 0.98,
-                    playtime: "50+ часов",
-                    vibe: "Уютная и медитативная",
-                    whyPerfect: "Идеально для расслабления после тяжелого дня, нет давления и спешки",
-                    platforms: ["PC", "PS4", "XBOX", "Switch", "Mobile"]
-                },
-                {
-                    name: "Animal Crossing: New Horizons",
-                    genre: "Life-simulation",
-                    description: "Создайте свой идеальный остров, ловите рыбу, собирайте насекомых и обустраивайте свой дом в гармонии с природой.",
-                    moodMatch: 0.95,
-                    playtime: "100+ часов", 
-                    vibe: "Умиротворяющая и творческая",
-                    whyPerfect: "Полное отсутствие стресса, творческая свобода и очаровательный стиль",
-                    platforms: ["Switch"]
-                },
-                {
-                    name: "Journey",
-                    genre: "Приключение",
-                    description: "Поэтичное приключение в пустыне. Красивая визуальная история без слов, только эмоции и музыка.",
-                    moodMatch: 0.93,
-                    playtime: "2-3 часа",
-                    vibe: "Поэтичное и медитативное",
-                    whyPerfect: "Короткая, но незабываемая эмоциональная история, идеальная для релакса",
-                    platforms: ["PC", "PS4", "PS5"]
-                }
-            ];
-            analysis.understoodMood = "Спокойное и расслабляющее времяпрепровождение";
-            
-        } else {
-            // Универсальные популярные игры
-            games = [
-                {
-                    name: "The Witcher 3: Wild Hunt",
-                    genre: "RPG",
-                    description: "Эпическая RPG с богатым сюжетом и открытым миром. Более 800 наград и звание одной из лучших игр в истории.",
-                    moodMatch: 0.90,
-                    playtime: "100+ часов",
-                    vibe: "Эпическое фэнтези",
-                    whyPerfect: "Невероятная глубина сюжета и мира, за которую игра получила всемирное признание",
-                    platforms: ["PC", "PS4", "XBOX", "Switch"]
-                },
-                {
-                    name: "Red Dead Redemption 2",
-                    genre: "Action-adventure",
-                    description: "Эпическая история о диком западе с невероятной детализацией мира. Жизнь ковбоя Артура Моргана.",
-                    moodMatch: 0.88,
-                    playtime: "60+ часов",
-                    vibe: "Ковбойская драма",
-                    whyPerfect: "Кинематографичный сюжет и один из самых детализированных игровых миров",
-                    platforms: ["PC", "PS4", "XBOX"]
-                },
-                {
-                    name: "Baldur's Gate 3",
-                    genre: "RPG",
-                    description: "Глубокая RPG на основе D&D с невероятной свободой выбора. Каждое решение влияет на историю.",
-                    moodMatch: 0.92,
-                    playtime: "80+ часов",
-                    vibe: "Тактическое фэнтези-приключение", 
-                    whyPerfect: "Беспрецедентная свобода действий и глубина игрового процесса",
-                    platforms: ["PC", "PS5", "XBOX Series X"]
-                },
-                {
-                    name: "Elden Ring",
-                    genre: "Action-RPG",
-                    description: "Новаторская игра с открытым миром от создателей Dark Souls. Исследуйте Земли Междуземия.",
-                    moodMatch: 0.85,
-                    playtime: "80+ часов",
-                    vibe: "Сложное исследование",
-                    whyPerfect: "Гениальное сочетание открытого мира и сложного геймплея от FromSoftware",
-                    platforms: ["PC", "PS4", "PS5", "XBOX"]
-                }
-            ];
-        }
-
-        return {
-            analysis: analysis,
-            games: games
-        };
-    }
-
-    createSearchPrompt(userQuery) {
-        return `Пользователь ищет игры по запросу: "${userQuery}".
-
-Проанализируй запрос и предложи 3-4 самые релевантные игры. 
-
-Верни ответ ТОЛЬКО в формате JSON без каких-либо дополнительных текстов:
-
-{
-    "analysis": {
-        "understoodMood": "строка с описанием настроения",
-        "recommendedStyle": "строка с рекомендуемым стилем", 
-        "keyFactors": ["фактор1", "фактор2", "фактор3"],
-        "reasoning": "строка с объяснением подбора"
-    },
-    "games": [
-        {
-            "name": "название игры",
-            "genre": "жанр",
-            "description": "интересное описание игры 2-3 предложения",
-            "moodMatch": 0.95,
-            "playtime": "время прохождения",
-            "vibe": "атмосфера игры", 
-            "whyPerfect": "почему идеально подходит под запрос",
-            "platforms": ["PC", "PS5", "XBOX", "Switch"]
-        }
-    ]
-}`;
     }
 
     parseAIResponse(content) {
         try {
-            // Очищаем ответ от возможных markdown символов
-            const cleanContent = content.replace(/```json|```/g, '').trim();
-            return JSON.parse(cleanContent);
+            // Очищаем ответ от возможных markdown
+            let cleanContent = content.trim();
+            
+            // Удаляем ```json и ```
+            if (cleanContent.startsWith('```json')) {
+                cleanContent = cleanContent.substring(7);
+            }
+            if (cleanContent.endsWith('```')) {
+                cleanContent = cleanContent.substring(0, cleanContent.length - 3);
+            }
+            cleanContent = cleanContent.trim();
+            
+            console.log('🧹 Cleaned content:', cleanContent.substring(0, 200) + '...');
+            
+            const parsed = JSON.parse(cleanContent);
+            
+            // Валидация структуры
+            if (!parsed.analysis || !parsed.games) {
+                throw new Error('Invalid JSON structure from DeepSeek');
+            }
+            
+            // Гарантируем что games - массив
+            if (!Array.isArray(parsed.games)) {
+                throw new Error('Games should be an array');
+            }
+            
+            return parsed;
+            
         } catch (error) {
-            console.error('Failed to parse AI response:', error);
-            console.log('Raw content:', content);
-            throw new Error('Failed to parse AI response');
+            console.error('❌ Failed to parse DeepSeek response:', error);
+            console.log('📄 Raw content that failed to parse:', content);
+            throw new Error(`Ошибка обработки ответа от DeepSeek: ${error.message}`);
         }
     }
 }
