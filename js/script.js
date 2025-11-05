@@ -161,37 +161,55 @@ class GameFinderApp {
         this.style.height = Math.min(this.scrollHeight, 200) + 'px';
     }
 
-    async handleSearch() {
-        const query = this.searchInput ? this.searchInput.value.trim() : '';
+    async handleSearch(query, filters = {}) {
+    try {
+        this.showLoading();
         
-        if (!query) {
-            this.showError('📝 Пожалуйста, опишите что вы ищете');
-            return;
+        // Добавляем таймаут для запроса
+        const searchPromise = this.gameSearchAI.searchGames(query, filters);
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Request timeout')), 30000)
+        );
+        
+        const results = await Promise.race([searchPromise, timeoutPromise]);
+        
+        if (!results || typeof results !== 'object') {
+            throw new Error('Invalid response format');
         }
-
-        console.log('🔍 Starting DeepSeek search for:', query);
-        this.setLoading(true);
-        this.hideError();
-
-        try {
-            const gameAI = new GameSearchAI(CONFIG.DEEPSEEK_API_KEY);
-            const results = await gameAI.searchGames(query);
-            
-            // Добавляем флаг hasMore для кнопки "Еще"
-            results.hasMore = false; // DeepSeek всегда возвращает 12 игр
-            results.totalGames = results.games.length;
-            
-            this.displayResults(results);
-            
-            console.log('✅ DeepSeek search completed successfully');
-            
-        } catch (error) {
-            console.error('❌ DeepSeek search error:', error);
-            this.showError(`❌ ${error.message}`);
-        } finally {
-            this.setLoading(false);
-        }
+        
+        this.displayResults(results);
+        
+    } catch (error) {
+        console.error('Search error:', error);
+        this.showError(`Ошибка поиска: ${error.message}`);
+        
+        // Fallback: показать локальные результаты или кэшированные данные
+        this.showFallbackResults(query);
     }
+}
+
+// Метод для показа запасных результатов
+showFallbackResults(query) {
+    const fallbackResults = {
+        games: [
+            {
+                name: "Fallback Game 1",
+                genre: "RPG",
+                platform: "PC",
+                description: "Попробуйте обновить запрос или проверьте соединение"
+            },
+            {
+                name: "Fallback Game 2", 
+                genre: "Action",
+                platform: "Multiplatform",
+                description: "Сервис временно недоступен"
+            }
+        ]
+    };
+    
+    this.displayResults(fallbackResults);
+    this.showError("Используются локальные результаты. DeepSeek временно недоступен.");
+}
 
     setLoading(isLoading) {
         if (!this.searchBtn) return;

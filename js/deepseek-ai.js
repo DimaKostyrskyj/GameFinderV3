@@ -3,6 +3,7 @@ class GameSearchAI {
         this.apiKey = apiKey;
         this.baseURL = 'https://api.deepseek.com/chat/completions';
     }
+    
 
     async searchGames(userQuery) {
         try {
@@ -96,6 +97,7 @@ class GameSearchAI {
             throw new Error(`DeepSeek недоступен: ${error.message}`);
         }
     }
+    
 
     parseAIResponse(content) {
         try {
@@ -132,5 +134,35 @@ class GameSearchAI {
             console.log('📄 Raw content that failed to parse:', content);
             throw new Error(`Ошибка обработки ответа от DeepSeek: ${error.message}`);
         }
+    }
+    async searchGames(query, filters = {}) {
+    try {
+        const prompt = this.buildSearchPrompt(query, filters);
+        const response = await this.sendRequestToDeepSeek(prompt);
+        
+        if (!response) {
+            throw new Error('Empty response from DeepSeek');
+        }
+
+        // Обработка streaming response если нужно
+        if (typeof response === 'string') {
+            return this.parseAIResponse(response);
+        }
+        
+        // Если ответ уже объект
+        return response;
+        
+    } catch (error) {
+        console.error('DeepSeek search error:', error);
+        
+        // Более информативное сообщение об ошибке
+        if (error.message.includes('JSON')) {
+            throw new Error(`DeepSeek недоступен: Ошибка обработки ответа: ${error.message}`);
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+            throw new Error('DeepSeek недоступен: Проблемы с сетью');
+        } else {
+            throw new Error(`DeepSeek недоступен: ${error.message}`);
+        }
+    }
     }
 }
