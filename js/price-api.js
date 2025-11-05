@@ -43,22 +43,9 @@ class PriceAPI {
     // 🔍 Поиск игры в Steam
 async searchSteamGame(gameName) {
     try {
-        // Используем proxy вместо прямого вызова Steam API
-        const response = await fetch(`/proxy.php?endpoint=ISteamApps/GetAppList/v2/`);
-        
-        if (!response.ok) throw new Error('Steam API error');
-        
-        const data = await response.json();
-        const apps = data.applist.apps;
-        
-        // Точный поиск по названию
-        const foundApp = apps.find(app => 
-            app.name.toLowerCase().includes(gameName.toLowerCase()) ||
-            gameName.toLowerCase().includes(app.name.toLowerCase())
-        );
-        
-        return foundApp ? foundApp.appid : null;
-        
+        // Простая заглушка - всегда возвращаем расчетную цену
+        console.log(`Игра "${gameName}" не найдена в Steam, используем расчетную цену`);
+        return null;
     } catch (error) {
         console.error('Steam search error:', error);
         return null;
