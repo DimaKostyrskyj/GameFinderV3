@@ -11,7 +11,6 @@ class GameFinderApp {
         this.initApp();
     }
     
-
     initApp() {
         try {
             this.initDOMElements();
@@ -79,83 +78,83 @@ class GameFinderApp {
     }
 
     initCurrencyDropdown() {
-    const currencyToggle = document.getElementById('currencyToggle');
-    const currencyMenu = document.querySelector('.currency-dropdown-menu');
-    const currencyOptions = document.querySelectorAll('.currency-option');
-    const currentCurrencySymbol = document.getElementById('currentCurrencySymbol');
-    
-    if (currencyToggle && currencyMenu) {
-        // Обработчик открытия/закрытия меню
-        currencyToggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            currencyMenu.classList.toggle('show');
-            currencyToggle.classList.toggle('active');
-        });
+        const currencyToggle = document.getElementById('currencyToggle');
+        const currencyMenu = document.querySelector('.currency-dropdown-menu');
+        const currencyOptions = document.querySelectorAll('.currency-option');
+        const currentCurrencySymbol = document.getElementById('currentCurrencySymbol');
         
-        // Обработчик выбора валюты
-        currencyOptions.forEach(option => {
-            option.addEventListener('click', (e) => {
-                const currency = option.getAttribute('data-currency');
-                const symbol = option.querySelector('.currency-symbol').textContent;
-                
-                this.changeCurrency(currency);
-                
-                // Обновляем отображение
-                currentCurrencySymbol.textContent = symbol;
-                
-                // Обновляем активный класс
-                currencyOptions.forEach(opt => opt.classList.remove('active'));
-                option.classList.add('active');
-                
-                // Закрываем меню
-                currencyMenu.classList.remove('show');
-                currencyToggle.classList.remove('active');
-                
-                // Эффект смены валюты
-                currencyToggle.classList.add('currency-spin');
-                setTimeout(() => {
-                    currencyToggle.classList.remove('currency-spin');
-                }, 600);
+        if (currencyToggle && currencyMenu) {
+            // Обработчик открытия/закрытия меню
+            currencyToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currencyMenu.classList.toggle('show');
+                currencyToggle.classList.toggle('active');
             });
-        });
+            
+            // Обработчик выбора валюты
+            currencyOptions.forEach(option => {
+                option.addEventListener('click', (e) => {
+                    const currency = option.getAttribute('data-currency');
+                    const symbol = option.querySelector('.currency-symbol').textContent;
+                    
+                    this.changeCurrency(currency);
+                    
+                    // Обновляем отображение
+                    currentCurrencySymbol.textContent = symbol;
+                    
+                    // Обновляем активный класс
+                    currencyOptions.forEach(opt => opt.classList.remove('active'));
+                    option.classList.add('active');
+                    
+                    // Закрываем меню
+                    currencyMenu.classList.remove('show');
+                    currencyToggle.classList.remove('active');
+                    
+                    // Эффект смены валюты
+                    currencyToggle.classList.add('currency-spin');
+                    setTimeout(() => {
+                        currencyToggle.classList.remove('currency-spin');
+                    }, 600);
+                });
+            });
+            
+            // Закрытие при клике вне меню
+            document.addEventListener('click', (e) => {
+                if (!currencyToggle.contains(e.target) && !currencyMenu.contains(e.target)) {
+                    currencyMenu.classList.remove('show');
+                    currencyToggle.classList.remove('active');
+                }
+            });
+            
+            // Инициализация текущей валюты
+            this.initCurrentCurrency();
+        }
+    }
+
+    initCurrentCurrency() {
+        const savedCurrency = this.priceAPI.getSavedCurrency() || 'USD';
+        const currencyOptions = document.querySelectorAll('.currency-option');
+        const currentCurrencySymbol = document.getElementById('currentCurrencySymbol');
         
-        // Закрытие при клике вне меню
-        document.addEventListener('click', (e) => {
-            if (!currencyToggle.contains(e.target) && !currencyMenu.contains(e.target)) {
-                currencyMenu.classList.remove('show');
-                currencyToggle.classList.remove('active');
+        currencyOptions.forEach(option => {
+            if (option.getAttribute('data-currency') === savedCurrency) {
+                option.classList.add('active');
+                const symbol = option.querySelector('.currency-symbol').textContent;
+                currentCurrencySymbol.textContent = symbol;
             }
         });
         
-        // Инициализация текущей валюты
-        this.initCurrentCurrency();
+        // Добавляем пульсацию для привлечения внимания
+        setTimeout(() => {
+            const currencyToggle = document.getElementById('currencyToggle');
+            if (currencyToggle) {
+                currencyToggle.classList.add('pulse');
+                setTimeout(() => {
+                    currencyToggle.classList.remove('pulse');
+                }, 6000);
+            }
+        }, 2000);
     }
-}
-
-initCurrentCurrency() {
-    const savedCurrency = this.priceAPI.getSavedCurrency() || 'USD';
-    const currencyOptions = document.querySelectorAll('.currency-option');
-    const currentCurrencySymbol = document.getElementById('currentCurrencySymbol');
-    
-    currencyOptions.forEach(option => {
-        if (option.getAttribute('data-currency') === savedCurrency) {
-            option.classList.add('active');
-            const symbol = option.querySelector('.currency-symbol').textContent;
-            currentCurrencySymbol.textContent = symbol;
-        }
-    });
-    
-    // Добавляем пульсацию для привлечения внимания
-    setTimeout(() => {
-        const currencyToggle = document.getElementById('currencyToggle');
-        if (currencyToggle) {
-            currencyToggle.classList.add('pulse');
-            setTimeout(() => {
-                currencyToggle.classList.remove('pulse');
-            }, 6000);
-        }
-    }, 2000);
-}
 
     autoResizeTextarea() {
         this.style.height = 'auto';
@@ -163,36 +162,36 @@ initCurrentCurrency() {
     }
 
     async handleSearch() {
-    const query = this.searchInput ? this.searchInput.value.trim() : '';
-    
-    if (!query) {
-        this.showError('📝 Пожалуйста, опишите что вы ищете');
-        return;
-    }
+        const query = this.searchInput ? this.searchInput.value.trim() : '';
+        
+        if (!query) {
+            this.showError('📝 Пожалуйста, опишите что вы ищете');
+            return;
+        }
 
-    console.log('🔍 Starting DeepSeek search for:', query);
-    this.setLoading(true);
-    this.hideError();
+        console.log('🔍 Starting DeepSeek search for:', query);
+        this.setLoading(true);
+        this.hideError();
 
-    try {
-        const gameAI = new GameSearchAI(CONFIG.DEEPSEEK_API_KEY);
-        const results = await gameAI.searchGames(query);
-        
-        // Добавляем флаг hasMore для кнопки "Еще"
-        results.hasMore = false; // DeepSeek всегда возвращает 12 игр
-        results.totalGames = results.games.length;
-        
-        this.displayResults(results);
-        
-        console.log('✅ DeepSeek search completed successfully');
-        
-    } catch (error) {
-        console.error('❌ DeepSeek search error:', error);
-        this.showError(`❌ ${error.message}`);
-    } finally {
-        this.setLoading(false);
+        try {
+            const gameAI = new GameSearchAI(CONFIG.DEEPSEEK_API_KEY);
+            const results = await gameAI.searchGames(query);
+            
+            // Добавляем флаг hasMore для кнопки "Еще"
+            results.hasMore = false; // DeepSeek всегда возвращает 12 игр
+            results.totalGames = results.games.length;
+            
+            this.displayResults(results);
+            
+            console.log('✅ DeepSeek search completed successfully');
+            
+        } catch (error) {
+            console.error('❌ DeepSeek search error:', error);
+            this.showError(`❌ ${error.message}`);
+        } finally {
+            this.setLoading(false);
+        }
     }
-}
 
     setLoading(isLoading) {
         if (!this.searchBtn) return;
@@ -220,7 +219,10 @@ initCurrentCurrency() {
         this.resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         this.displayAIAnalysis(results.analysis);
         this.displayGames(results.games);
-        this.showStats(results.games.length);
+        this.showStats(results.games.length, results.totalGames);
+        
+        // Убираем кнопку "Еще" так как DeepSeek всегда возвращает 12 игр
+        this.hideLoadMoreButton();
     }
 
     displayAIAnalysis(analysis) {
@@ -251,162 +253,148 @@ initCurrentCurrency() {
     }
 
     displayGames(games) {
-    if (!this.gamesContainer) return;
+        if (!this.gamesContainer) return;
 
-    this.gamesContainer.innerHTML = games.map((game, index) => `
-        <div class="game-card fade-in-up" style="animation-delay: ${index * 0.1}s">
-            <div class="game-header">
-                <div class="game-title-section">
-                    <h4 class="game-title">${game.name}</h4>
-                    <div class="game-meta">
-                        <span class="game-genre">${game.genre}</span>
-                        ${game.platforms ? `<span class="game-platforms">${game.platforms.slice(0, 3).join(', ')}</span>` : ''}
+        this.gamesContainer.innerHTML = games.map((game, index) => `
+            <div class="game-card fade-in-up" style="animation-delay: ${index * 0.1}s">
+                <div class="game-header">
+                    <div class="game-title-section">
+                        <h4 class="game-title">${game.name}</h4>
+                        <div class="game-meta">
+                            <span class="game-genre">${game.genre}</span>
+                            ${game.platforms ? `<span class="game-platforms">${game.platforms.slice(0, 3).join(', ')}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="match-score">
+                        <div class="score-circle">${Math.round(game.moodMatch * 100)}%</div>
+                        <div class="score-label">совпадение</div>
                     </div>
                 </div>
-                <div class="match-score">
-                    <div class="score-circle">${Math.round(game.moodMatch * 100)}%</div>
-                    <div class="score-label">совпадение</div>
+                <p class="game-description">${game.description}</p>
+                <div class="game-details">
+                    <div class="detail-item">
+                        <span class="detail-icon">🕐</span>
+                        <span>${game.playtime}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">🎭</span>
+                        <span>${game.vibe}</span>
+                    </div>
+                </div>
+                <div class="game-reason">
+                    <div class="reason-title">🎯 Почему идеально подходит:</div>
+                    <p class="reason-text">${game.whyPerfect}</p>
+                </div>
+                
+                <!-- БЛОК МАГАЗИНОВ И ЦЕН -->
+                <div class="stores-container">
+                    <h4>🛒 Где купить:</h4>
+                    <div class="store-buttons">
+                        <button class="store-btn" data-store="steam" data-game="${game.name}">Steam</button>
+                        <button class="store-btn" data-store="epic" data-game="${game.name}">Epic Games</button>
+                        <button class="store-btn" data-store="xbox" data-game="${game.name}">XBOX</button>
+                        <button class="store-btn" data-store="ea" data-game="${game.name}">EA App</button>
+                        <button class="store-btn" data-store="ubisoft" data-game="${game.name}">Ubisoft</button>
+                    </div>
+                    <div class="price-info" id="price-${game.name.replace(/\s+/g, '-').toLowerCase()}">
+                        <p class="price-loading">Выберите магазин для просмотра цены</p>
+                    </div>
                 </div>
             </div>
-            <p class="game-description">${game.description}</p>
-            <div class="game-details">
-                <div class="detail-item">
-                    <span class="detail-icon">🕐</span>
-                    <span>${game.playtime}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-icon">🎭</span>
-                    <span>${game.vibe}</span>
-                </div>
-            </div>
-            <div class="game-reason">
-                <div class="reason-title">🎯 Почему идеально подходит:</div>
-                <p class="reason-text">${game.whyPerfect}</p>
-            </div>
-            
-            <!-- БЛОК МАГАЗИНОВ И ЦЕН -->
-            <div class="stores-container">
-                <h4>🛒 Где купить:</h4>
-                <div class="store-buttons">
-                    <button class="store-btn" data-store="steam" data-game="${game.name}">Steam</button>
-                    <button class="store-btn" data-store="epic" data-game="${game.name}">Epic Games</button>
-                    <button class="store-btn" data-store="xbox" data-game="${game.name}">XBOX</button>
-                    <button class="store-btn" data-store="ea" data-game="${game.name}">EA App</button>
-                    <button class="store-btn" data-store="ubisoft" data-game="${game.name}">Ubisoft</button>
-                </div>
-                <div class="price-info" id="price-${game.name.replace(/\s+/g, '-').toLowerCase()}">
-                    <p class="price-loading">Выберите магазин для просмотра цены</p>
-                </div>
-            </div>
-        </div>
-    `).join('');
+        `).join('');
 
-    // Добавляем обработчики для кнопок магазинов
-    this.initStoreButtons();
-}
-
-displayResults(results) {
-    if (!this.resultsSection || !this.gamesContainer || !this.analysisContent) return;
-
-    this.resultsSection.classList.remove('hidden');
-    this.resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    this.displayAIAnalysis(results.analysis);
-    this.displayGames(results.games);
-    this.showStats(results.games.length, results.totalGames);
-    
-    // Убираем кнопку "Еще" так как DeepSeek всегда возвращает 12 игр
-    this.hideLoadMoreButton();
-}
-
-showStats(shownCount, totalCount) {
-    const gamesGrid = document.querySelector('.games-grid');
-    if (!gamesGrid) return;
-
-    const statsElement = document.createElement('div');
-    statsElement.className = 'stats-info';
-    statsElement.innerHTML = `
-        <div class="stats-card">
-            <span class="stats-icon">🤖</span>
-            <span>DeepSeek AI нашёл <strong>${shownCount}</strong> игр</span>
-        </div>
-    `;
-    
-    const existingStats = gamesGrid.querySelector('.stats-info');
-    if (existingStats) existingStats.remove();
-    gamesGrid.insertBefore(statsElement, gamesGrid.querySelector('.games-container'));
-}
-
-hideLoadMoreButton() {
-    const loadMoreBtn = document.querySelector('.load-more-btn');
-    if (loadMoreBtn) {
-        loadMoreBtn.remove();
+        // Добавляем обработчики для кнопок магазинов
+        this.initStoreButtons();
     }
-}
+
+    showStats(shownCount, totalCount) {
+        const gamesGrid = document.querySelector('.games-grid');
+        if (!gamesGrid) return;
+
+        const statsElement = document.createElement('div');
+        statsElement.className = 'stats-info';
+        statsElement.innerHTML = `
+            <div class="stats-card">
+                <span class="stats-icon">🤖</span>
+                <span>DeepSeek AI нашёл <strong>${shownCount}</strong> игр</span>
+            </div>
+        `;
+        
+        const existingStats = gamesGrid.querySelector('.stats-info');
+        if (existingStats) existingStats.remove();
+        gamesGrid.insertBefore(statsElement, gamesGrid.querySelector('.games-container'));
+    }
+
+    hideLoadMoreButton() {
+        const loadMoreBtn = document.querySelector('.load-more-btn');
+        if (loadMoreBtn) {
+            loadMoreBtn.remove();
+        }
+    }
 
     displayPrice(priceData, store, gameName, priceInfo) {
-    if (!priceData) {
-        priceInfo.innerHTML = '<p class="price-error">❌ Цена не найдена</p>';
-        return;
-    }
+        if (!priceData) {
+            priceInfo.innerHTML = '<p class="price-error">❌ Цена не найдена</p>';
+            return;
+        }
 
-    let priceHTML = '';
-    
-    if (priceData.isRealPrice) {
-        priceHTML = `
-            <div class="price-real">
-                <div class="price-main">
-                    <span class="price-amount">${this.priceAPI.formatPrice(priceData.price, priceData.currency)}</span>
-                    ${priceData.discount > 0 ? `
-                        <span class="price-discount-badge">-${priceData.discount}%</span>
+        let priceHTML = '';
+        
+        if (priceData.isRealPrice) {
+            priceHTML = `
+                <div class="price-real">
+                    <div class="price-main">
+                        <span class="price-amount">${this.priceAPI.formatPrice(priceData.price, priceData.currency)}</span>
+                        ${priceData.discount > 0 ? `
+                            <span class="price-discount-badge">-${priceData.discount}%</span>
+                        ` : ''}
+                    </div>
+                    ${priceData.originalPrice ? `
+                        <div class="price-original">
+                            Было: <span class="price-strikethrough">${this.priceAPI.formatPrice(priceData.originalPrice, priceData.currency)}</span>
+                        </div>
+                    ` : ''}
+                    <div class="price-source">
+                        ✅ Актуальная цена из ${store}
+                    </div>
+                </div>
+            `;
+        } else {
+            priceHTML = `
+                <div class="price-calculated">
+                    <div class="price-main">
+                        <span class="price-amount">${this.priceAPI.formatPrice(priceData.price, priceData.currency)}</span>
+                        ${priceData.discount > 0 ? `
+                            <span class="price-discount-badge">-${priceData.discount}%</span>
+                        ` : ''}
+                    </div>
+                    ${priceData.originalPrice ? `
+                        <div class="price-original">
+                            Было: <span class="price-strikethrough">${this.priceAPI.formatPrice(priceData.originalPrice, priceData.currency)}</span>
+                        </div>
+                    ` : ''}
+                    <div class="price-source">
+                        📊 Расчетная цена ${priceData.basedOnSteam ? '(на основе Steam)' : ''}
+                    </div>
+                    ${priceData.steamReference ? `
+                        <div class="price-reference">
+                            ${priceData.steamReference}
+                        </div>
                     ` : ''}
                 </div>
-                ${priceData.originalPrice ? `
-                    <div class="price-original">
-                        Было: <span class="price-strikethrough">${this.priceAPI.formatPrice(priceData.originalPrice, priceData.currency)}</span>
-                    </div>
-                ` : ''}
-                <div class="price-source">
-                    ✅ Актуальная цена из ${store}
-                </div>
+            `;
+        }
+
+        priceHTML += `
+            <div class="price-actions">
+                <button class="visit-store-btn" onclick="window.openStore('${store}', '${gameName}')">
+                    Перейти в магазин
+                </button>
             </div>
         `;
-    } else {
-        priceHTML = `
-            <div class="price-calculated">
-                <div class="price-main">
-                    <span class="price-amount">${this.priceAPI.formatPrice(priceData.price, priceData.currency)}</span>
-                    ${priceData.discount > 0 ? `
-                        <span class="price-discount-badge">-${priceData.discount}%</span>
-                    ` : ''}
-                </div>
-                ${priceData.originalPrice ? `
-                    <div class="price-original">
-                        Было: <span class="price-strikethrough">${this.priceAPI.formatPrice(priceData.originalPrice, priceData.currency)}</span>
-                    </div>
-                ` : ''}
-                <div class="price-source">
-                    📊 Расчетная цена ${priceData.basedOnSteam ? '(на основе Steam)' : ''}
-                </div>
-                ${priceData.steamReference ? `
-                    <div class="price-reference">
-                        ${priceData.steamReference}
-                    </div>
-                ` : ''}
-            </div>
-        `;
+
+        priceInfo.innerHTML = priceHTML;
     }
-
-    priceHTML += `
-        <div class="price-actions">
-            <button class="visit-store-btn" onclick="window.openStore('${store}', '${gameName}')">
-                Перейти в магазин
-            </button>
-        </div>
-    `;
-
-    priceInfo.innerHTML = priceHTML;
-
-}
 
     initStoreButtons() {
         const storeButtons = document.querySelectorAll('.store-btn');
@@ -421,109 +409,71 @@ hideLoadMoreButton() {
     }
 
     async handleStoreClick(store, gameName, button) {
-    // Убираем активный класс у всех кнопок в этой карточке
-    const allButtons = button.parentElement.querySelectorAll('.store-btn');
-    allButtons.forEach(btn => btn.classList.remove('active'));
-    
-    // Добавляем активный класс к нажатой кнопке
-    button.classList.add('active');
-    
-    // Показываем загрузку
-    const priceInfo = document.getElementById(`price-${gameName.replace(/\s+/g, '-').toLowerCase()}`);
-    priceInfo.innerHTML = '<p class="price-loading">🔄 Запрашиваем актуальную цену...</p>';
-    
-    try {
-        const price = await this.fetchGamePrice(gameName, store);
-        this.displayPrice(price, store, gameName, priceInfo);
-    } catch (error) {
-        console.error('Error fetching price:', error);
-        priceInfo.innerHTML = `
-            <div class="price-error">
-                <p>❌ Не удалось получить цену</p>
-                <p class="price-error-detail">${error.message}</p>
-            </div>
-        `;
+        // Убираем активный класс у всех кнопок в этой карточке
+        const allButtons = button.parentElement.querySelectorAll('.store-btn');
+        allButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Добавляем активный класс к нажатой кнопке
+        button.classList.add('active');
+        
+        // Показываем загрузку
+        const priceInfo = document.getElementById(`price-${gameName.replace(/\s+/g, '-').toLowerCase()}`);
+        priceInfo.innerHTML = '<p class="price-loading">🔄 Запрашиваем актуальную цену...</p>';
+        
+        try {
+            const price = await this.fetchGamePrice(gameName, store);
+            this.displayPrice(price, store, gameName, priceInfo);
+        } catch (error) {
+            console.error('Error fetching price:', error);
+            priceInfo.innerHTML = `
+                <div class="price-error">
+                    <p>❌ Не удалось получить цену</p>
+                    <p class="price-error-detail">${error.message}</p>
+                    <div class="price-actions">
+                        <button class="visit-page-btn" onclick="window.openStore('${store}', '${gameName}')">
+                            Перейти в магазин
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
     }
-}
 
     async fetchGamePrice(gameName, store) {
-    try {
-        if (!window.priceAPI) {
-            throw new Error('PriceAPI not available');
+        try {
+            if (!window.priceAPI) {
+                throw new Error('PriceAPI not available');
+            }
+            
+            let priceData;
+            
+            switch(store) {
+                case 'steam':
+                    priceData = await window.priceAPI.getSteamPrice(gameName);
+                    break;
+                case 'epic':
+                    priceData = await window.priceAPI.getEpicPrice(gameName);
+                    break;
+                case 'xbox':
+                    priceData = await window.priceAPI.getXboxPrice(gameName);
+                    break;
+                case 'ea':
+                    priceData = await window.priceAPI.getEAPrice(gameName);
+                    break;
+                case 'ubisoft':
+                    priceData = await window.priceAPI.getUbisoftPrice(gameName);
+                    break;
+                default:
+                    throw new Error(`Unknown store: ${store}`);
+            }
+            
+            return priceData;
+            
+        } catch (error) {
+            console.error('Price fetch error:', error);
+            throw error;
         }
-        
-        let priceData;
-        
-        switch(store) {
-            case 'steam':
-                priceData = await window.priceAPI.getSteamPrice(gameName);
-                break;
-            case 'epic':
-                priceData = await window.priceAPI.getEpicPrice(gameName);
-                break;
-            case 'xbox':
-                priceData = await window.priceAPI.getXboxPrice(gameName);
-                break;
-            case 'ea':
-                priceData = await window.priceAPI.getEAPrice(gameName);
-                break;
-            case 'ubisoft':
-                priceData = await window.priceAPI.getUbisoftPrice(gameName);
-                break;
-            default:
-                throw new Error(`Unknown store: ${store}`);
-        }
-        
-        return priceData;
-        
-    } catch (error) {
-        console.error('Price fetch error:', error);
-        throw error;
     }
-}
-
-    displayPrice
-
-// В методе handleStoreClick улучшите обработку ошибок:
-async handleStoreClick(store, gameName, button) {
-    // Убираем активный класс у всех кнопок в этой карточке
-    const allButtons = button.parentElement.querySelectorAll('.store-btn');
-    allButtons.forEach(btn => btn.classList.remove('active'));
-    
-    // Добавляем активный класс к нажатой кнопке
-    button.classList.add('active');
-    
-    // Показываем загрузку
-    const priceInfo = document.getElementById(`price-${gameName.replace(/\s+/g, '-').toLowerCase()}`);
-    priceInfo.innerHTML = '<p class="price-loading">🔄 AI ищет актуальную цену...</p>';
-    
-    try {
-        const price = await this.fetchGamePrice(gameName, store);
-        this.displayPrice(price, store, gameName, priceInfo); // ✅ Исправлено
-    } catch (error) {
-        console.error('Price fetch error:', error);
-        
-        let errorMessage = 'Не удалось получить цену';
-        if (error.message.includes('JSON') || error.message.includes('парсинга')) {
-            errorMessage = 'Ошибка обработки данных AI';
-        } else if (error.message.includes('API')) {
-            errorMessage = 'Ошибка подключения к AI';
-        }
-        
-        priceInfo.innerHTML = `
-            <div class="price-error">
-                <p>❌ ${errorMessage}</p>
-                <p class="price-error-detail">Но вы все равно можете посмотреть игру в магазине</p>
-                <div class="price-actions">
-                    <button class="visit-page-btn" onclick="window.openStore('${store}', '${gameName}')">
-                        Перейти на страницу товара
-                    </button>
-                </div>
-            </div>
-        `;
-    }
-}
-
 
     async changeCurrency(currency) {
         this.priceAPI.setCurrency(currency);
@@ -535,24 +485,6 @@ async handleStoreClick(store, gameName, button) {
             const gameName = button.getAttribute('data-game');
             await this.handleStoreClick(store, gameName, button);
         }
-    }
-
-    showStats(gameCount) {
-        const gamesGrid = document.querySelector('.games-grid');
-        if (!gamesGrid) return;
-
-        const statsElement = document.createElement('div');
-        statsElement.className = 'stats-info';
-        statsElement.innerHTML = `
-            <div class="stats-card">
-                <span class="stats-icon">📊</span>
-                <span>Найдено <strong>${gameCount}</strong> игр</span>
-            </div>
-        `;
-        
-        const existingStats = gamesGrid.querySelector('.stats-info');
-        if (existingStats) existingStats.remove();
-        gamesGrid.insertBefore(statsElement, gamesGrid.querySelector('.games-container'));
     }
 
     setupNavigation() {

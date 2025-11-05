@@ -41,40 +41,27 @@ class PriceAPI {
     }
 
     // 🔍 Поиск игры в Steam
-async searchSteamGame(gameName) {
-    try {
-        // Простая заглушка - всегда возвращаем расчетную цену
-        console.log(`Игра "${gameName}" не найдена в Steam, используем расчетную цену`);
-        return null;
-    } catch (error) {
-        console.error('Steam search error:', error);
-        return null;
-    }
-}
-
-// 💰 Получение данных о цене из Steam
-async getSteamPriceData(appId, currency = 'us') {
-    try {
-        const response = await fetch(
-            `/proxy.php?endpoint=api/appdetails&appid=${appId}&cc=${currency}`
-        );
-        
-        if (!response.ok) throw new Error('Steam store API error');
-        
-        const data = await response.json();
-        const appData = data[appId];
-        
-        if (!appData || !appData.success || !appData.data?.price_overview) {
+    async searchSteamGame(gameName) {
+        try {
+            // Простая заглушка - всегда возвращаем расчетную цену
+            console.log(`Игра "${gameName}" не найдена в Steam, используем расчетную цену`);
+            return null;
+        } catch (error) {
+            console.error('Steam search error:', error);
             return null;
         }
-        
-        return appData.data.price_overview;
-        
-    } catch (error) {
-        console.error('Steam price error:', error);
-        return null;
     }
-}
+
+    // 💰 Получение данных о цене из Steam
+    async getSteamPriceData(appId, currency = 'us') {
+        try {
+            // Заглушка для Steam API
+            return null;
+        } catch (error) {
+            console.error('Steam price error:', error);
+            return null;
+        }
+    }
 
     // 🎯 Основной метод для Steam
     async getSteamPrice(gameName) {
