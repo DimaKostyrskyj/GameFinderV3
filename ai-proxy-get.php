@@ -1,7 +1,7 @@
 <?php
-header('Access-Control-Allow-Origin: https://www.gamefinders.org');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -75,7 +75,8 @@ curl_setopt_array($ch, [
         'Accept: application/json'
     ],
     CURLOPT_TIMEOUT => 30,
-    CURLOPT_SSL_VERIFYPEER => true
+    CURLOPT_SSL_VERIFYPEER => true,
+    CURLOPT_USERAGENT => 'GameFinder/1.0'
 ]);
 
 $response = curl_exec($ch);
@@ -86,6 +87,14 @@ curl_close($ch);
 if ($error) {
     http_response_code(500);
     echo json_encode(['error' => 'API request failed: ' . $error]);
+    exit();
+}
+
+// Проверяем, что ответ - валидный JSON
+$jsonResponse = json_decode($response, true);
+if (json_last_error() !== JSON_ERROR_NONE) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Invalid JSON response from DeepSeek API']);
     exit();
 }
 

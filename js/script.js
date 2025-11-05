@@ -90,34 +90,35 @@ class GameFinderApp {
         this.style.height = 'auto';
         this.style.height = Math.min(this.scrollHeight, 200) + 'px';
     }
+    
 
     async handleSearch() {
-        try {
-            const query = this.searchInput ? this.searchInput.value.trim() : '';
-            console.log('🔍 Handle search called with query:', query);
-            
-            if (!query) {
-                this.showError('Пожалуйста, введите описание того, что вы ищете');
-                return;
-            }
-
-            this.setLoading(true);
-            this.hideError();
-
-            console.log('🚀 Starting AI search...');
-            
-            const results = await this.gameSearchAI.searchGames(query);
-            console.log('✅ Search results received:', results);
-            
-            this.displayResults(results);
-            
-        } catch (error) {
-            console.error('❌ Search error:', error);
-            this.showError(error.message);
-        } finally {
-            this.setLoading(false);
+    try {
+        const query = this.searchInput ? this.searchInput.value.trim() : '';
+        console.log('🔍 Handle search called with query:', query);
+        
+        if (!query) {
+            this.showError('Пожалуйста, введите описание того, что вы ищете');
+            return;
         }
+
+        this.setLoading(true);
+        this.hideError();
+
+        console.log('🚀 Starting AI search...');
+        
+        const results = await this.gameSearchAI.searchGames(query);
+        console.log('✅ Search results received:', results);
+        
+        this.displayResults(results);
+        
+    } catch (error) {
+        console.error('❌ Search error:', error);
+        this.showError('Произошла ошибка при поиске. Пожалуйста, попробуйте еще раз.');
+    } finally {
+        this.setLoading(false);
     }
+}
 
     setLoading(isLoading) {
         if (!this.searchBtn) {
