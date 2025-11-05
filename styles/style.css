@@ -2955,3 +2955,74 @@ input:focus, textarea:focus, select:focus {
         padding: 20px;
     }
 }
+/* Стили для особенностей игры */
+.features-section {
+    margin-bottom: 40px;
+}
+
+.features-section h3 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--text-white);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.features-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.feature-tag {
+    background: linear-gradient(45deg, var(--primary-blue), var(--primary-purple));
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.feature-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(14, 165, 233, 0.4);
+}
+
+/* Стили для бесплатных игр */
+.price-amount-detailed.free {
+    color: #51cf66;
+    font-size: 2.2rem;
+}
+
+.free-btn {
+    background: linear-gradient(45deg, #51cf66, #40c057) !important;
+}
+
+.free-btn:hover {
+    box-shadow: 0 8px 25px rgba(81, 207, 102, 0.4) !important;
+}
+
+/* Улучшенные стили для требований */
+.requirement-item {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 15px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.req-label {
+    font-weight: 600;
+    color: var(--primary-blue);
+    text-align: left;
+}
+
+.req-value {
+    font-weight: 500;
+    text-align: left;
+    color: var(--text-white);
+}
