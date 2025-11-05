@@ -1,94 +1,86 @@
 class GameSearchAI {
     constructor() {
-        this.baseURL = 'https://www.gamefinders.org/ai-proxy-get.php';
+        this.baseURL = 'ai-proxy-get.php'; // Относительный путь
     }
 
     async searchGames(userQuery) {
-    try {
-        console.log('🤖 Starting DeepSeek AI search for:', userQuery);
-        
-        if (!userQuery || userQuery.trim() === '') {
-            throw new Error('Поисковый запрос не может быть пустым');
-        }
-
-        const url = `${this.baseURL}?query=${encodeURIComponent(userQuery)}`;
-        console.log('📡 Request URL:', url);
-        
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-            }
-        });
-        
-        console.log('📥 DeepSeek response status:', response.status);
-        
-        if (!response.ok) {
-            let errorText;
-            try {
-                const errorData = await response.json();
-                errorText = errorData.error || 'Unknown error';
-            } catch (e) {
-                errorText = await response.text();
-            }
-            
-            console.error('❌ DeepSeek API error:', response.status, errorText);
-            
-            let errorMessage = 'Ошибка сервера';
-            if (response.status === 400) errorMessage = 'Неверный запрос';
-            if (response.status === 500) errorMessage = 'Ошибка на сервере DeepSeek';
-            if (response.status === 429) errorMessage = 'Слишком много запросов';
-            
-            throw new Error(`DeepSeek API: ${errorMessage} (код: ${response.status})`);
-        }
-
-        // Получаем текст ответа для отладки
-        const responseText = await response.text();
-        console.log('📝 Raw response text:', responseText.substring(0, 500) + '...');
-
-        // Пытаемся распарсить JSON
-        let data;
         try {
-            data = JSON.parse(responseText);
-        } catch (parseError) {
-            console.error('❌ JSON parse error:', parseError);
-            console.log('📄 Problematic response:', responseText);
-            throw new Error('Неверный формат ответа от сервера');
+            console.log('🤖 Starting DeepSeek AI search for:', userQuery);
+            
+            if (!userQuery || userQuery.trim() === '') {
+                throw new Error('Поисковый запрос не может быть пустым');
+            }
+
+            const url = `${this.baseURL}?query=${encodeURIComponent(userQuery)}`;
+            console.log('📡 Request URL:', url);
+            
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                }
+            });
+            
+            console.log('📥 DeepSeek response status:', response.status);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ DeepSeek API error:', response.status, errorText);
+                
+                // Проверяем, не пришел ли PHP код вместо JSON
+                if (errorText.includes('<?php') || errorText.includes('<!DOCTYPE')) {
+                    throw new Error('Сервер вернул HTML вместо JSON. Проверьте настройки PHP.');
+                }
+                
+                let errorMessage = 'Ошибка сервера';
+                if (response.status === 400) errorMessage = 'Неверный запрос';
+                if (response.status === 500) errorMessage = 'Ошибка на сервере DeepSeek';
+                if (response.status === 429) errorMessage = 'Слишком много запросов';
+                
+                throw new Error(`DeepSeek API: ${errorMessage} (код: ${response.status})`);
+            }
+
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('❌ Expected JSON but got:', text.substring(0, 200));
+                throw new Error('Сервер вернул не JSON ответ');
+            }
+
+            const data = await response.json();
+            console.log('✅ DeepSeek raw response:', data);
+
+            // Проверяем на ошибку от прокси
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            // Проверяем структуру ответа
+            if (!data.choices || !Array.isArray(data.choices) || data.choices.length === 0) {
+                throw new Error('Некорректный ответ от DeepSeek API');
+            }
+
+            const content = data.choices[0].message.content;
+            console.log('📝 DeepSeek content:', content);
+
+            if (!content) {
+                throw new Error('Пустой ответ от AI');
+            }
+
+            const results = this.parseAIResponse(content);
+            
+            if (!results.games || results.games.length === 0) {
+                throw new Error('AI не нашел подходящих игр');
+            }
+            
+            console.log(`🎯 DeepSeek found ${results.games.length} games`);
+            return results;
+            
+        } catch (error) {
+            console.error('❌ DeepSeek search error:', error);
+            throw new Error(`Ошибка поиска: ${error.message}`);
         }
-
-        console.log('✅ Parsed response:', data);
-
-        // Проверяем на ошибку от прокси
-        if (data.error) {
-            throw new Error(data.error);
-        }
-
-        // Проверяем структуру ответа DeepSeek
-        if (!data.choices || !Array.isArray(data.choices) || data.choices.length === 0) {
-            throw new Error('Некорректный ответ от DeepSeek API');
-        }
-
-        const content = data.choices[0].message.content;
-        console.log('📝 DeepSeek content:', content);
-
-        if (!content) {
-            throw new Error('Пустой ответ от AI');
-        }
-
-        const results = this.parseAIResponse(content);
-        
-        if (!results.games || results.games.length === 0) {
-            throw new Error('AI не нашел подходящих игр');
-        }
-        
-        console.log(`🎯 DeepSeek found ${results.games.length} games`);
-        return results;
-        
-    } catch (error) {
-        console.error('❌ DeepSeek search error:', error);
-        throw new Error(`Ошибка поиска: ${error.message}`);
     }
-}
 
     parseAIResponse(content) {
         try {
