@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Details - GameFinders</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+    <link rel="stylesheet" href="styles/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Анимированный фон -->
+    <div class="animated-bg"></div>
+    <div class="particles-container" id="particles"></div>
+
+    <!-- Выбор валюты в углу экрана -->
+    <div class="currency-corner">
+        <div class="currency-compact-btn" id="currencyToggle">
+            <span class="currency-compact-icon">💎</span>
+            <span class="currency-compact-symbol" id="currentCurrencySymbol">$</span>
+        </div>
+        <div class="currency-dropdown-menu compact">
+            <div class="currency-options">
+                <div class="currency-option" data-currency="USD">
+                    <span class="currency-flag">🇺🇸</span>
+                    <span class="currency-text">USD</span>
+                    <span class="currency-symbol">$</span>
+                </div>
+                <div class="currency-option" data-currency="EUR">
+                    <span class="currency-flag">🇪🇺</span>
+                    <span class="currency-text">EUR</span>
+                    <span class="currency-symbol">€</span>
+                </div>
+                <div class="currency-option" data-currency="UAH">
+                    <span class="currency-flag">🇺🇦</span>
+                    <span class="currency-text">UAH</span>
+                    <span class="currency-symbol">₴</span>
+                </div>
+                <div class="currency-option" data-currency="RUB">
+                    <span class="currency-flag">🇷🇺</span>
+                    <span class="currency-text">RUB</span>
+                    <span class="currency-symbol">₽</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Главный контейнер -->
+    <div class="container">
+        <!-- Хедер -->
+        <header class="header">
+            <div class="glass-card header-content">
+                <!-- Логотип слева -->
+                <div class="logo-left">
+                    <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px;">
+                        <div class="logo-icon">🎮</div>
+                        <h1 class="logo-title">GameFinders</h1>
+                    </a>
+                </div>
+
+                <!-- Навигация справа -->
+                <nav class="nav">
+                    <a href="index.html" class="nav-btn">
+                        <div class="nav-icon">🔍</div>
+                        <span class="nav-text">Новый поиск</span>
+                    </a>
+                    <a href="index.html#about" class="nav-btn">
+                        <div class="nav-icon">ℹ️</div>
+                        <span class="nav-text">О проекте</span>
+                    </a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Детальная страница игры -->
+        <section class="game-details-section">
+            <div class="glass-card game-details-card">
+                <!-- Заголовок и навигация -->
+                <div class="game-details-header">
+                    <a href="index.html" class="back-btn">
+                        <span class="back-icon">←</span>
+                        Назад к результатам
+                    </a>
+                    <div class="game-header-main">
+                        <h1 class="game-title-large" id="detailGameTitle">Название игры</h1>
+                        <div class="game-match-score">
+                            <div class="match-badge">Совпадение: <span id="detailMatchScore">95%</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Основной контент -->
+                <div class="game-details-content">
+                    <!-- Левая колонка - изображение и основная информация -->
+                    <div class="game-details-left">
+                        <div class="game-image-container">
+                            <img id="detailGameImage" src="" alt="Изображение игры" class="game-image">
+                            <div class="image-placeholder" id="imagePlaceholder">
+                                <span class="placeholder-icon">🎮</span>
+                                <span>Изображение загружается...</span>
+                            </div>
+                        </div>
+                        
+                        <div class="game-quick-info">
+                            <div class="info-item">
+                                <span class="info-label">Жанр:</span>
+                                <span class="info-value" id="detailGenre">Жанр</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Платформы:</span>
+                                <span class="info-value" id="detailPlatforms">Платформы</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Время игры:</span>
+                                <span class="info-value" id="detailPlaytime">Время</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Атмосфера:</span>
+                                <span class="info-value" id="detailVibe">Атмосфера</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Правая колонка - описание и магазины -->
+                    <div class="game-details-right">
+                        <!-- Описание игры -->
+                        <div class="game-description-section">
+                            <h3>📖 Описание игры</h3>
+                            <p class="game-description-full" id="detailDescription">Описание игры...</p>
+                        </div>
+
+                        <!-- Почему подходит -->
+                        <div class="game-reason-section">
+                            <h3>🎯 Почему идеально подходит</h3>
+                            <p class="game-reason-full" id="detailReason">Причина подбора...</p>
+                        </div>
+
+                        <!-- Системные требования -->
+                        <div class="requirements-section">
+                            <h3>⚙️ Системные требования</h3>
+                            <div class="requirements-grid">
+                                <div class="requirement-col">
+                                    <h4>Минимальные</h4>
+                                    <div class="requirement-item">
+                                        <span class="req-label">ОС:</span>
+                                        <span class="req-value" id="minOS">Windows 10</span>
+                                    </div>
+                                    <div class="requirement-item">
+                                        <span class="req-label">Процессор:</span>
+                                        <span class="req-value" id="minCPU">Intel Core i5</span>
+                                    </div>
+                                    <div class="requirement-item">
+                                        <span class="req-label">Память:</span>
+                                        <span class="req-value" id="minRAM">8 GB RAM</span>
+                                    </div>
+                                    <div class="requirement-item">
+                                        <span class="req-label">Видеокарта:</span>
+                                        <span class="req-value" id="minGPU">GTX 960</span>
+                                    </div>
+                                    <div class="requirement-item">
+                                        <span class="req-label">Место на диске:</span>
+                                        <span class="req-value" id="minStorage">50 GB</span>
+                                    </div>
+                                </div>
+                                <div class="requirement-col">
+                                    <h4>Рекомендуемые</h4>
+                                    <div class="requirement-item">
+                                        <span class="req-label">ОС:</span>
+                                        <span class="req-value" id="recOS">Windows 11</span>
+                                    </div>
+                                    <div class="requirement-item">
+                                        <span class="req-label">Процессор:</span>
+                                        <span class="req-value" id="recCPU">Intel Core i7</span>
+                                    </div>
+                                    <div class="requirement-item">
+                                        <span class="req-label">Память:</span>
+                                        <span class="req-value" id="recRAM">16 GB RAM</span>
+                                    </div>
+                                    <div class="requirement-item">
+                                        <span class="req-label">Видеокарта:</span>
+                                        <span class="req-value" id="recGPU">RTX 2060</span>
+                                    </div>
+                                    <div class="requirement-item">
+                                        <span class="req-label">Место на диске:</span>
+                                        <span class="req-value" id="recStorage">50 GB</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Где купить -->
+                        <div class="stores-section-detailed">
+                            <h3>🛒 Где купить</h3>
+                            <div class="detailed-stores-grid" id="detailedStores">
+                                <!-- Сюда будут добавляться магазины с ценами -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Скрипты -->
+    <script src="js/price-api.js"></script>
+    <script src="js/game-details.js"></script>
+</body>
+</html>

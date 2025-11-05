@@ -2536,3 +2536,422 @@ input:focus, textarea:focus, select:focus {
         font-size: 1.2em;
     }
 }
+/* Стили для детальной страницы игры */
+.game-details-section {
+    padding: 120px 0 40px;
+    min-height: 100vh;
+}
+
+.game-details-card {
+    padding: 40px;
+    margin: 20px auto;
+    max-width: 1400px;
+}
+
+.game-details-header {
+    margin-bottom: 40px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 20px;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: rgba(14, 165, 233, 0.1);
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    background: rgba(14, 165, 233, 0.2);
+    transform: translateX(-5px);
+}
+
+.back-icon {
+    font-size: 1.2rem;
+}
+
+.game-header-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.game-title-large {
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(45deg, var(--primary-blue), var(--primary-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.match-badge {
+    background: linear-gradient(45deg, #10b981, #059669);
+    padding: 10px 20px;
+    border-radius: 25px;
+    color: white;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.game-details-content {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+/* Левая колонка */
+.game-image-container {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 30px;
+    background: rgba(255, 255, 255, 0.05);
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.game-image {
+    width: 100%;
+    height: auto;
+    display: none;
+}
+
+.image-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 40px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.placeholder-icon {
+    font-size: 4rem;
+    opacity: 0.5;
+}
+
+.game-quick-info {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 600;
+    color: var(--text-gray);
+}
+
+.info-value {
+    font-weight: 500;
+    text-align: right;
+}
+
+/* Правая колонка */
+.game-description-section,
+.game-reason-section,
+.requirements-section,
+.stores-section-detailed {
+    margin-bottom: 40px;
+}
+
+.game-description-section h3,
+.game-reason-section h3,
+.requirements-section h3,
+.stores-section-detailed h3 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--text-white);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.game-description-full,
+.game-reason-full {
+    line-height: 1.8;
+    font-size: 1.1rem;
+    color: var(--text-gray);
+    background: rgba(255, 255, 255, 0.03);
+    padding: 25px;
+    border-radius: 15px;
+    border-left: 4px solid var(--primary-blue);
+}
+
+/* Системные требования */
+.requirements-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.requirement-col h4 {
+    color: var(--primary-blue);
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+}
+
+.requirement-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.req-label {
+    font-weight: 600;
+    color: var(--text-gray);
+}
+
+.req-value {
+    font-weight: 500;
+    text-align: right;
+}
+
+/* Магазины на детальной странице */
+.detailed-stores-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.store-price-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 25px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.store-price-card.real {
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.store-price-card.calculated {
+    border-color: rgba(234, 179, 8, 0.3);
+}
+
+.store-price-card.unavailable {
+    border-color: rgba(255, 255, 255, 0.1);
+    opacity: 0.7;
+}
+
+.store-price-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.store-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.store-icon {
+    font-size: 2rem;
+}
+
+.store-name {
+    font-size: 1.3rem;
+    margin: 0;
+    flex: 1;
+}
+
+.price-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.price-badge.real {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+.price-badge.calculated {
+    background: rgba(234, 179, 8, 0.2);
+    color: #eab308;
+}
+
+.price-main-detailed {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+    justify-content: center;
+}
+
+.price-amount-detailed {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-white);
+}
+
+.discount-badge-detailed {
+    background: #ff4444;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.original-price-detailed {
+    color: var(--text-gray);
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.saving-amount {
+    color: #51cf66;
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+}
+
+.buy-now-btn {
+    width: 100%;
+    background: linear-gradient(45deg, var(--primary-blue), var(--primary-purple));
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.buy-now-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4);
+}
+
+.loading-prices {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-gray);
+    font-size: 1.1rem;
+    grid-column: 1 / -1;
+}
+
+.price-unavailable {
+    text-align: center;
+    color: var(--text-gray);
+    font-style: italic;
+    margin: 20px 0;
+}
+
+/* Кликабельные заголовки на главной */
+.clickable-title {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.clickable-title:hover {
+    color: var(--primary-blue);
+    transform: translateX(5px);
+}
+
+.clickable-title::after {
+    content: '🔍';
+    margin-left: 8px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.clickable-title:hover::after {
+    opacity: 1;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .game-details-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .game-image-container {
+        max-width: 500px;
+        margin: 0 auto 30px;
+    }
+    
+    .requirements-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .game-details-card {
+        padding: 20px;
+        margin: 10px;
+    }
+    
+    .game-title-large {
+        font-size: 2rem;
+    }
+    
+    .game-header-main {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .detailed-stores-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .price-amount-detailed {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-details-section {
+        padding: 100px 0 20px;
+    }
+    
+    .game-title-large {
+        font-size: 1.7rem;
+    }
+    
+    .game-quick-info {
+        padding: 15px;
+    }
+    
+    .store-price-card {
+        padding: 20px;
+    }
+}

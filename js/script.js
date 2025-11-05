@@ -253,59 +253,61 @@ class GameFinderApp {
     }
 
     displayGames(games) {
-        if (!this.gamesContainer) return;
+    if (!this.gamesContainer) return;
 
-        this.gamesContainer.innerHTML = games.map((game, index) => `
-            <div class="game-card fade-in-up" style="animation-delay: ${index * 0.1}s">
-                <div class="game-header">
-                    <div class="game-title-section">
-                        <h4 class="game-title">${game.name}</h4>
-                        <div class="game-meta">
-                            <span class="game-genre">${game.genre}</span>
-                            ${game.platforms ? `<span class="game-platforms">${game.platforms.slice(0, 3).join(', ')}</span>` : ''}
-                        </div>
-                    </div>
-                    <div class="match-score">
-                        <div class="score-circle">${Math.round(game.moodMatch * 100)}%</div>
-                        <div class="score-label">совпадение</div>
-                    </div>
-                </div>
-                <p class="game-description">${game.description}</p>
-                <div class="game-details">
-                    <div class="detail-item">
-                        <span class="detail-icon">🕐</span>
-                        <span>${game.playtime}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-icon">🎭</span>
-                        <span>${game.vibe}</span>
-                    </div>
-                </div>
-                <div class="game-reason">
-                    <div class="reason-title">🎯 Почему идеально подходит:</div>
-                    <p class="reason-text">${game.whyPerfect}</p>
-                </div>
-                
-                <!-- БЛОК МАГАЗИНОВ И ЦЕН -->
-                <div class="stores-container">
-                    <h4>🛒 Где купить:</h4>
-                    <div class="store-buttons">
-                        <button class="store-btn" data-store="steam" data-game="${game.name}">Steam</button>
-                        <button class="store-btn" data-store="epic" data-game="${game.name}">Epic Games</button>
-                        <button class="store-btn" data-store="xbox" data-game="${game.name}">XBOX</button>
-                        <button class="store-btn" data-store="ea" data-game="${game.name}">EA App</button>
-                        <button class="store-btn" data-store="ubisoft" data-game="${game.name}">Ubisoft</button>
-                    </div>
-                    <div class="price-info" id="price-${game.name.replace(/\s+/g, '-').toLowerCase()}">
-                        <p class="price-loading">Выберите магазин для просмотра цены</p>
-                    </div>
+    this.gamesContainer.innerHTML = games.map((game, index) => `
+        <div class="game-card fade-in-up" style="animation-delay: ${index * 0.1}s" 
+             data-game='${JSON.stringify(game).replace(/'/g, "&#39;")}'>
+            <!-- Остальной код карточки без изменений -->
+            <div class="game-header">
+                <div class="game-title-section">
+                    <h4 class="game-title clickable-title">${game.name}</h4>
+                    <!-- ... остальной контент ... -->
                 </div>
             </div>
-        `).join('');
+            <!-- ... остальной контент карточки ... -->
+        </div>
+    `).join('');
 
-        // Добавляем обработчики для кнопок магазинов
-        this.initStoreButtons();
-    }
+    // Добавляем обработчики для кнопок магазинов
+    this.initStoreButtons();
+    
+    // Добавляем обработчики клика по заголовкам игр
+    this.initGameClickHandlers();
+}
+
+// Новый метод для обработки кликов по играм
+initGameClickHandlers() {
+    const gameTitles = document.querySelectorAll('.clickable-title');
+    const gameCards = document.querySelectorAll('.game-card');
+    
+    gameTitles.forEach((title, index) => {
+        title.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const gameCard = title.closest('.game-card');
+            const gameData = gameCard.getAttribute('data-game');
+            this.openGameDetails(JSON.parse(gameData));
+        });
+    });
+    
+    gameCards.forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (!e.target.closest('.store-btn') && !e.target.closest('.clickable-title')) {
+                const gameData = card.getAttribute('data-game');
+                this.openGameDetails(JSON.parse(gameData));
+            }
+        });
+    });
+}
+
+// Метод для открытия детальной страницы
+openGameDetails(game) {
+    // Сохраняем данные игры в sessionStorage
+    sessionStorage.setItem('currentGame', JSON.stringify(game));
+    
+    // Переходим на страницу деталей
+    window.location.href = 'game-details.html';
+}
 
     showStats(shownCount, totalCount) {
         const gamesGrid = document.querySelector('.games-grid');

@@ -80,12 +80,12 @@
                     </a>
                 </nav>
             </div>
-</header>
+        </header>
 
         <!-- Герой секция -->
         <section class="hero">
             <div class="glass-card hero-card">
-                <motion class="hero-content">
+                <div class="hero-content">
                     <h1 class="hero-title">
                         Найди идеальную игру<br>
                         <span class="gradient-text">с помощью AI</span>
@@ -94,30 +94,6 @@
                         Просто опиши своё настроение, и наш искусственный интеллект подберёт 
                         игры, которые идеально тебе подходят
                     </p>
-                    <section class="download-section">
-    <div class="glass-card download-card">
-        <div class="download-content">
-            <div class="download-icon">🚀</div>
-            <h2>Установите наш лаунчер</h2>
-            <p>Для лучшего опыта использования GameFinders скачайте наш лаунчер</p>
-            <div class="download-features">
-                <div class="feature">⚡ Быстрый запуск</div>
-                <div class="feature">🎮 Умные рекомендации</div>
-                <div class="feature">🔔 Уведомления о новых играх</div>
-            </div>
-            <a href="https://www.dropbox.com/scl/fi/zggxinarmocvpcl81gy6g/GameFinderAI_Setup_v1.5.exe?rlkey=c45nbfmxg58cenjdz5egqh7cw&st=t80rbm1y&dl=1" 
-               class="download-main-btn" download>
-                <span class="btn-icon">⬇️</span>
-                Скачать лаунчер
-                <span class="btn-size">(159 MB)</span>
-            </a>
-            <div class="download-info">
-                <span class="version">Версия 1.0.0</span>
-                <span class="platform">Windows 10/11</span>
-            </div>
-        </div>
-    </div>
-</section>
                     
                     <!-- Поисковая форма -->
                     <div class="search-form">
@@ -148,7 +124,7 @@
                             <button class="example-chip" data-example="Нужна стратегия для ума">♟️ Стратегия</button>
                         </div>
                     </div>
-                </motion>
+                </div>
             </div>
         </section>
 
@@ -214,22 +190,3 @@
     <script src="js/script.js"></script>
 </body>
 </html>
-<script>
-// Гарантированная инициализация
-function initializeApp() {
-    if (typeof GameFinderApp !== 'undefined') {
-        window.gameFinderApp = new GameFinderApp();
-        console.log('✅ App initialized successfully');
-    } else {
-        console.error('❌ GameFinderApp not found, retrying...');
-        setTimeout(initializeApp, 100);
-    }
-}
-
-// Ждем полной загрузки страницы
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeApp);
-} else {
-    initializeApp();
-}
-</script>
