@@ -26,9 +26,76 @@ class GameFinderApp {
         }
     }
 
+    initDOMElements() {
+        this.searchInput = document.getElementById('searchInput');
+        this.searchBtn = document.getElementById('searchBtn');
+        this.resultsSection = document.getElementById('results');
+        this.gamesContainer = document.getElementById('gamesContainer');
+        this.analysisContent = document.getElementById('aiAnalysis');
+        this.exampleChips = document.querySelectorAll('.example-chip');
+
+        console.log('📝 DOM elements loaded:', {
+            searchInput: !!this.searchInput,
+            searchBtn: !!this.searchBtn,
+            resultsSection: !!this.resultsSection,
+            gamesContainer: !!this.gamesContainer,
+            exampleChips: this.exampleChips.length
+        });
+    }
+
+    initEventListeners() {
+        // Кнопка поиска
+        if (this.searchBtn) {
+            console.log('🔄 Adding click listener to search button');
+            this.searchBtn.addEventListener('click', () => {
+                console.log('🎯 Search button clicked!');
+                this.handleSearch();
+            });
+        } else {
+            console.error('❌ Search button not found!');
+        }
+
+        // Enter в поиске
+        if (this.searchInput) {
+            this.searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    console.log('⌨️ Enter pressed in search input');
+                    this.handleSearch();
+                }
+            });
+
+            this.searchInput.addEventListener('input', this.autoResizeTextarea);
+        }
+
+        // Быстрые примеры
+        if (this.exampleChips.length > 0) {
+            this.exampleChips.forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const exampleText = chip.getAttribute('data-example');
+                    console.log('💡 Example chip clicked:', exampleText);
+                    if (this.searchInput) {
+                        this.searchInput.value = exampleText;
+                        this.autoResizeTextarea.call(this.searchInput);
+                    }
+                    this.handleSearch();
+                });
+            });
+        }
+
+        console.log('🎯 Event listeners attached');
+    }
+
+    autoResizeTextarea() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+    }
+
     async handleSearch() {
         try {
-            const query = this.searchInput.value.trim();
+            const query = this.searchInput ? this.searchInput.value.trim() : '';
+            console.log('🔍 Handle search called with query:', query);
+            
             if (!query) {
                 this.showError('Пожалуйста, введите описание того, что вы ищете');
                 return;
@@ -37,10 +104,10 @@ class GameFinderApp {
             this.setLoading(true);
             this.hideError();
 
-            console.log('🔍 Starting search with query:', query);
+            console.log('🚀 Starting AI search...');
             
             const results = await this.gameSearchAI.searchGames(query);
-            console.log('✅ Search results:', results);
+            console.log('✅ Search results received:', results);
             
             this.displayResults(results);
             
@@ -53,53 +120,100 @@ class GameFinderApp {
     }
 
     setLoading(isLoading) {
-        if (!this.searchBtn) return;
+        if (!this.searchBtn) {
+            console.error('❌ Search button not found for loading state');
+            return;
+        }
 
         const btnText = this.searchBtn.querySelector('.btn-text');
         const loadingSpinner = this.searchBtn.querySelector('.loading-spinner');
         
+        if (!btnText || !loadingSpinner) {
+            console.error('❌ Loading elements not found');
+            return;
+        }
+
         if (isLoading) {
             btnText.classList.add('hidden');
             loadingSpinner.classList.remove('hidden');
             this.searchBtn.disabled = true;
             this.searchBtn.style.opacity = '0.7';
+            console.log('⏳ Loading state: ON');
         } else {
             btnText.classList.remove('hidden');
             loadingSpinner.classList.add('hidden');
             this.searchBtn.disabled = false;
             this.searchBtn.style.opacity = '1';
+            console.log('✅ Loading state: OFF');
         }
     }
 
     displayResults(results) {
-        if (!this.resultsSection || !this.gamesContainer || !this.analysisContent) return;
+        if (!this.resultsSection || !this.gamesContainer) {
+            console.error('❌ Results section or games container not found');
+            return;
+        }
 
+        console.log('📊 Displaying results...');
         this.resultsSection.classList.remove('hidden');
         this.resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        this.displayAIAnalysis(results.analysis);
-        this.displayGames(results.games);
         
-        // Убираем кнопку "Еще" так как DeepSeek всегда возвращает игры
-        this.hideLoadMoreButton();
+        if (results.analysis && this.analysisContent) {
+            this.displayAIAnalysis(results.analysis);
+        }
+        
+        this.displayGames(results.games);
+        this.showStats(results.games.length);
+        
+        console.log('🎉 Results displayed successfully');
+    }
+
+    displayAIAnalysis(analysis) {
+        if (!this.analysisContent) return;
+
+        this.analysisContent.innerHTML = `
+            <div class="analysis-header">
+                <h3>🎯 AI анализ вашего запроса</h3>
+            </div>
+            <div class="analysis-content">
+                <div class="analysis-item">
+                    <strong>📊 Понятое настроение:</strong> ${analysis.understoodMood || 'Не определено'}
+                </div>
+                <div class="analysis-item">
+                    <strong>🎨 Рекомендуемый стиль:</strong> ${analysis.recommendedStyle || 'Не определен'}
+                </div>
+                <div class="key-factors">
+                    <strong>🔑 Ключевые факторы:</strong>
+                    <div class="mood-tags">
+                        ${(analysis.keyFactors || ['фактор1', 'фактор2']).map(factor => `<span class="mood-tag">${factor}</span>`).join('')}
+                    </div>
+                </div>
+                <div class="reasoning">
+                    <strong>💡 Объяснение подбора:</strong> ${analysis.reasoning || 'AI проанализировал ваш запрос и подобрал подходящие игры'}
+                </div>
+            </div>
+        `;
     }
 
     displayGames(games) {
         if (!this.gamesContainer) return;
 
+        console.log(`🎮 Displaying ${games.length} games`);
+        
         this.gamesContainer.innerHTML = games.map((game, index) => `
             <div class="game-card fade-in-up" style="animation-delay: ${index * 0.1}s" 
                  data-game='${JSON.stringify(game).replace(/'/g, "&#39;")}'>
                 
                 <div class="game-header">
                     <div class="game-title-section">
-                        <h4 class="game-title clickable-title">${game.name}</h4>
+                        <h4 class="game-title clickable-title">${game.name || 'Название игры'}</h4>
                         <div class="game-meta">
-                            <span class="game-genre">${game.genre}</span>
+                            <span class="game-genre">${game.genre || 'Жанр'}</span>
                             <span class="game-platforms">${game.platforms?.join(', ') || 'PC'}</span>
                         </div>
                     </div>
                     <div class="match-score">
-                        <div class="score-circle">${Math.round(game.moodMatch * 100)}%</div>
+                        <div class="score-circle">${Math.round((game.moodMatch || 0.8) * 100)}%</div>
                         <div class="score-label">Совпадение</div>
                     </div>
                 </div>
@@ -107,21 +221,21 @@ class GameFinderApp {
                 <div class="game-details">
                     <div class="detail-item">
                         <span class="detail-icon">⏱️</span>
-                        <span>${game.playtime}</span>
+                        <span>${game.playtime || 'Время не указано'}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-icon">🎨</span>
-                        <span>${game.vibe}</span>
+                        <span>${game.vibe || 'Атмосфера не указана'}</span>
                     </div>
                 </div>
 
                 <div class="game-description">
-                    ${game.description}
+                    ${game.description || 'Описание игры будет загружено...'}
                 </div>
 
                 <div class="game-reason">
                     <div class="reason-title">🎯 Почему подходит:</div>
-                    ${game.whyPerfect}
+                    ${game.whyPerfect || 'Идеально подходит под ваш запрос'}
                 </div>
 
                 <div class="stores-container">
@@ -131,7 +245,7 @@ class GameFinderApp {
                             <span class="discord-mini-icon">🎮</span>
                             <span class="discord-mini-text">Актуальные цены в Discord</span>
                         </div>
-                        <a href="https://discord.gg/MeHJ9epedA" class="discord-mini-btn" target="_blank">
+                        <a href="https://discord.gg/MeHJ9epedA" class="discord-mini-btn" target="_blank" onclick="event.stopPropagation()">
                             Узнать цену
                         </a>
                     </div>
@@ -146,14 +260,16 @@ class GameFinderApp {
         this.initGameClickHandlers();
     }
 
-    // Остальные методы остаются без изменений...
     initGameClickHandlers() {
         const gameTitles = document.querySelectorAll('.clickable-title');
         const gameCards = document.querySelectorAll('.game-card');
         
+        console.log(`🎯 Adding click handlers to ${gameTitles.length} titles and ${gameCards.length} cards`);
+        
         gameTitles.forEach((title, index) => {
             title.addEventListener('click', (e) => {
                 e.stopPropagation();
+                console.log('📱 Title clicked');
                 const gameCard = title.closest('.game-card');
                 const gameData = gameCard.getAttribute('data-game');
                 this.openGameDetails(JSON.parse(gameData));
@@ -162,7 +278,9 @@ class GameFinderApp {
         
         gameCards.forEach(card => {
             card.addEventListener('click', (e) => {
-                if (!e.target.closest('.discord-mini-btn')) {
+                // Не открываем детали если кликнули на кнопку Discord
+                if (!e.target.closest('.discord-mini-btn') && !e.target.closest('.store-btn')) {
+                    console.log('🃏 Card clicked');
                     const gameData = card.getAttribute('data-game');
                     this.openGameDetails(JSON.parse(gameData));
                 }
@@ -171,8 +289,127 @@ class GameFinderApp {
     }
 
     openGameDetails(game) {
+        console.log('🔍 Opening game details:', game.name);
         sessionStorage.setItem('currentGame', JSON.stringify(game));
         window.location.href = 'game-details.html';
+    }
+
+    showStats(shownCount) {
+        const gamesGrid = document.querySelector('.games-grid');
+        if (!gamesGrid) return;
+
+        const statsElement = document.createElement('div');
+        statsElement.className = 'stats-info';
+        statsElement.innerHTML = `
+            <div class="stats-card">
+                <span class="stats-icon">🤖</span>
+                <span>DeepSeek AI нашёл <strong>${shownCount}</strong> игр</span>
+            </div>
+        `;
+        
+        const existingStats = gamesGrid.querySelector('.stats-info');
+        if (existingStats) existingStats.remove();
+        gamesGrid.insertBefore(statsElement, gamesGrid.querySelector('.games-container'));
+    }
+
+    hideLoadMoreButton() {
+        const loadMoreBtn = document.querySelector('.load-more-btn');
+        if (loadMoreBtn) {
+            loadMoreBtn.remove();
+        }
+    }
+
+    initCurrencyDropdown() {
+        const currencyToggle = document.getElementById('currencyToggle');
+        const currencyMenu = document.querySelector('.currency-dropdown-menu');
+        const currencyOptions = document.querySelectorAll('.currency-option');
+        const currentCurrencySymbol = document.getElementById('currentCurrencySymbol');
+        
+        if (currencyToggle && currencyMenu) {
+            currencyToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currencyMenu.classList.toggle('show');
+                currencyToggle.classList.toggle('active');
+            });
+            
+            currencyOptions.forEach(option => {
+                option.addEventListener('click', (e) => {
+                    const currency = option.getAttribute('data-currency');
+                    const symbol = option.querySelector('.currency-symbol').textContent;
+                    
+                    this.changeCurrency(currency);
+                    
+                    currentCurrencySymbol.textContent = symbol;
+                    
+                    currencyOptions.forEach(opt => opt.classList.remove('active'));
+                    option.classList.add('active');
+                    
+                    currencyMenu.classList.remove('show');
+                    currencyToggle.classList.remove('active');
+                    
+                    currencyToggle.classList.add('currency-spin');
+                    setTimeout(() => {
+                        currencyToggle.classList.remove('currency-spin');
+                    }, 600);
+                });
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!currencyToggle.contains(e.target) && !currencyMenu.contains(e.target)) {
+                    currencyMenu.classList.remove('show');
+                    currencyToggle.classList.remove('active');
+                }
+            });
+            
+            this.initCurrentCurrency();
+        }
+    }
+
+    initCurrentCurrency() {
+        const savedCurrency = this.priceAPI.getSavedCurrency() || 'USD';
+        const currencyOptions = document.querySelectorAll('.currency-option');
+        const currentCurrencySymbol = document.getElementById('currentCurrencySymbol');
+        
+        currencyOptions.forEach(option => {
+            if (option.getAttribute('data-currency') === savedCurrency) {
+                option.classList.add('active');
+                const symbol = option.querySelector('.currency-symbol').textContent;
+                currentCurrencySymbol.textContent = symbol;
+            }
+        });
+    }
+
+    async changeCurrency(currency) {
+        this.priceAPI.setCurrency(currency);
+    }
+
+    setupNavigation() {
+        const navButtons = document.querySelectorAll('.nav-btn[href^="#"]');
+        
+        navButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = button.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+                
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    history.pushState(null, null, `#${targetId}`);
+                }
+            });
+        });
+
+        console.log('🎯 Navigation setup complete');
+    }
+
+    setupDownloadTracking() {
+        const downloadButtons = document.querySelectorAll('[download], .download-btn');
+        
+        downloadButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                console.log('📥 Download button clicked');
+            });
+        });
     }
 
     showError(message) {
@@ -188,14 +425,17 @@ class GameFinderApp {
             </div>
         `;
         this.searchInput.parentNode.insertBefore(errorDiv, this.searchInput.nextSibling);
-        setTimeout(() => errorDiv.remove(), 5000);
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.remove();
+            }
+        }, 5000);
     }
 
     hideError() {
         const existingError = document.querySelector('.error-message');
         if (existingError) existingError.remove();
     }
-
 
     createParticles() {
         const container = document.getElementById('particles');
@@ -242,6 +482,14 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             if (!initializeApp()) {
                 console.error('❌ Failed to initialize GameFinderApp after retry');
+                
+                // Fallback: добавляем базовые обработчики
+                const searchBtn = document.getElementById('searchBtn');
+                if (searchBtn) {
+                    searchBtn.addEventListener('click', function() {
+                        alert('Приложение загружается... Попробуйте обновить страницу');
+                    });
+                }
             }
         }, 500);
     }
@@ -259,3 +507,22 @@ window.openStore = function(store, gameName) {
     
     window.open(urls[store], '_blank');
 };
+// Тест кнопки поиска
+console.log('🔧 Testing search button...');
+const testBtn = document.getElementById('searchBtn');
+if (testBtn) {
+    console.log('✅ Search button found in DOM');
+    testBtn.addEventListener('click', function() {
+        console.log('🎯 TEST: Search button click works!');
+    });
+} else {
+    console.error('❌ Search button NOT found in DOM');
+}
+
+// Проверяем textarea
+const testInput = document.getElementById('searchInput');
+if (testInput) {
+    console.log('✅ Search input found in DOM');
+} else {
+    console.error('❌ Search input NOT found in DOM');
+}
