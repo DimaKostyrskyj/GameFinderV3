@@ -7,13 +7,17 @@ class GameSearchAI {
         try {
             console.log('🤖 Starting DeepSeek AI search for:', userQuery);
             
+            if (!userQuery || userQuery.trim() === '') {
+                throw new Error('Поисковый запрос не может быть пустым');
+            }
+
             const url = `${this.baseURL}?query=${encodeURIComponent(userQuery)}`;
             console.log('📡 Request URL:', url);
             
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                 }
             });
             
@@ -22,29 +26,39 @@ class GameSearchAI {
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error('❌ DeepSeek API error:', response.status, errorText);
-                throw new Error(`DeepSeek API Error: ${response.status}`);
+                
+                let errorMessage = 'Ошибка сервера';
+                if (response.status === 400) errorMessage = 'Неверный запрос';
+                if (response.status === 500) errorMessage = 'Ошибка на сервере DeepSeek';
+                if (response.status === 429) errorMessage = 'Слишком много запросов';
+                
+                throw new Error(`DeepSeek API: ${errorMessage} (код: ${response.status})`);
             }
 
             const data = await response.json();
-            console.log('✅ DeepSeek response received:', data);
-            
+            console.log('✅ DeepSeek raw response:', data);
+
+            // Проверяем на ошибку от прокси
             if (data.error) {
                 throw new Error(data.error);
             }
 
-            if (!data.choices || !data.choices[0]) {
-                console.warn('⚠️ No choices in response, using fallback');
-                return this.getFallbackResponse(userQuery);
+            // Проверяем структуру ответа
+            if (!data.choices || !Array.isArray(data.choices) || data.choices.length === 0) {
+                throw new Error('Некорректный ответ от DeepSeek API');
             }
 
             const content = data.choices[0].message.content;
-            console.log('📝 DeepSeek content length:', content.length);
+            console.log('📝 DeepSeek content:', content);
+
+            if (!content) {
+                throw new Error('Пустой ответ от AI');
+            }
 
             const results = this.parseAIResponse(content);
             
             if (!results.games || results.games.length === 0) {
-                console.warn('⚠️ No games in response, using fallback');
-                return this.getFallbackResponse(userQuery);
+                throw new Error('AI не нашел подходящих игр');
             }
             
             console.log(`🎯 DeepSeek found ${results.games.length} games`);
@@ -52,8 +66,7 @@ class GameSearchAI {
             
         } catch (error) {
             console.error('❌ DeepSeek search error:', error);
-            // Возвращаем fallback данные вместо ошибки
-            return this.getFallbackResponse(userQuery);
+            throw new Error(`Ошибка поиска: ${error.message}`);
         }
     }
 
@@ -61,7 +74,9 @@ class GameSearchAI {
         try {
             let cleanContent = content.trim();
             
-            // Удаляем ```json и ```
+            console.log('🔧 Raw content for parsing:', cleanContent);
+
+            // Удаляем Markdown code blocks если есть
             if (cleanContent.startsWith('```json')) {
                 cleanContent = cleanContent.substring(7);
             }
@@ -69,118 +84,51 @@ class GameSearchAI {
                 cleanContent = cleanContent.substring(0, cleanContent.length - 3);
             }
             cleanContent = cleanContent.trim();
+
+            // Пытаемся найти JSON в тексте если он не чистый
+            let jsonStart = cleanContent.indexOf('{');
+            let jsonEnd = cleanContent.lastIndexOf('}');
             
-            console.log('🧹 Cleaned content:', cleanContent.substring(0, 200) + '...');
-            
+            if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+                cleanContent = cleanContent.substring(jsonStart, jsonEnd + 1);
+            }
+
+            console.log('🧹 Cleaned content:', cleanContent);
+
             const parsed = JSON.parse(cleanContent);
             
-            // Валидация структуры
-            if (!parsed.analysis || !parsed.games) {
-                throw new Error('Invalid JSON structure from DeepSeek');
+            // Базовая валидация структуры
+            if (!parsed.analysis) {
+                parsed.analysis = {
+                    understoodMood: "Настроение из запроса",
+                    recommendedStyle: "Различные стили",
+                    keyFactors: ["Настроение", "Предпочтения"],
+                    reasoning: "AI проанализировал ваш запрос"
+                };
             }
-            
-            if (!Array.isArray(parsed.games)) {
-                throw new Error('Games should be an array');
+
+            if (!parsed.games || !Array.isArray(parsed.games)) {
+                throw new Error('Games array is missing or invalid');
             }
-            
+
+            // Валидация каждой игры
+            parsed.games = parsed.games.map(game => ({
+                name: game.name || "Неизвестная игра",
+                genre: game.genre || "Жанр не указан",
+                description: game.description || "Описание отсутствует",
+                moodMatch: typeof game.moodMatch === 'number' ? game.moodMatch : 0.8,
+                playtime: game.playtime || "Время не указано",
+                vibe: game.vibe || "Атмосфера не описана",
+                whyPerfect: game.whyPerfect || "Подходит под ваш запрос",
+                platforms: Array.isArray(game.platforms) ? game.platforms : ["PC"]
+            }));
+
             return parsed;
             
         } catch (error) {
-            console.error('❌ Failed to parse DeepSeek response:', error);
-            console.log('📄 Raw content that failed to parse:', content);
-            
-            return this.getFallbackResponse();
+            console.error('❌ Failed to parse AI response:', error);
+            console.log('📄 Problematic content:', content);
+            throw new Error('Не удалось обработать ответ от AI. Попробуйте другой запрос.');
         }
-    }
-
-    getFallbackResponse(query = '') {
-        const fallbackGames = {
-            'расслабляющее': [
-                {
-                    name: "Stardew Valley",
-                    genre: "Фермерский симулятор",
-                    description: "Уютная фермерская игра с элементами RPG. Управляйте своей фермой, заводите друзей и исследуйте таинственные пещеры.",
-                    moodMatch: 0.95,
-                    playtime: "50-100 часов",
-                    vibe: "Уютная, расслабляющая, ностальгическая",
-                    whyPerfect: "Идеально подходит для расслабления после тяжелого дня",
-                    platforms: ["PC", "PS4", "XBOX", "Switch", "Mobile"]
-                },
-                {
-                    name: "Animal Crossing: New Horizons",
-                    genre: "Социальный симулятор",
-                    description: "Создайте свой идеальный остров, собирайте предметы, обустраивайте дом и общайтесь с милыми животными.",
-                    moodMatch: 0.92,
-                    playtime: "100+ часов",
-                    vibe: "Милая, спокойная, творческая",
-                    whyPerfect: "Помогает снять стресс и расслабиться",
-                    platforms: ["Switch"]
-                }
-            ],
-            'адреналиновый': [
-                {
-                    name: "DOOM Eternal",
-                    genre: "Шутер",
-                    description: "Беспощадный шутер с быстрым геймплеем. Уничтожайте демонов мощным арсеналом оружия.",
-                    moodMatch: 0.96,
-                    playtime: "15-20 часов",
-                    vibe: "Интенсивная, агрессивная, мощная",
-                    whyPerfect: "Дает выплеск адреналина и эмоций",
-                    platforms: ["PC", "PS4", "XBOX", "Switch"]
-                },
-                {
-                    name: "Titanfall 2",
-                    genre: "Шутер",
-                    description: "Динамичный шутер с мехами и паркуром. Отличная кампания и захватывающий мультиплеер.",
-                    moodMatch: 0.93,
-                    playtime: "6-8 часов (кампания)",
-                    vibe: "Быстрая, техничная, эпичная",
-                    whyPerfect: "Сочетание скоростного геймплея и тактических элементов",
-                    platforms: ["PC", "PS4", "XBOX"]
-                }
-            ],
-            'сюжетная': [
-                {
-                    name: "The Witcher 3: Wild Hunt",
-                    genre: "RPG",
-                    description: "Эпичная RPG с глубоким сюжетом и моральным выбором. Играйте за Геральта из Ривии в огромном открытом мире.",
-                    moodMatch: 0.98,
-                    playtime: "100+ часов",
-                    vibe: "Эпичная, атмосферная, эмоциональная",
-                    whyPerfect: "Одна из лучших сюжетных игр с глубокими персонажами",
-                    platforms: ["PC", "PS4", "XBOX", "Switch"]
-                },
-                {
-                    name: "Red Dead Redemption 2",
-                    genre: "Приключенческий экшен",
-                    description: "История бандита Артура Моргана в эпоху дикого запада. Открытый мир с живой экосистемой.",
-                    moodMatch: 0.95,
-                    playtime: "60-80 часов",
-                    vibe: "Кинематографичная, драматичная, immersive",
-                    whyPerfect: "Глубокий сюжет и проработанные персонажи",
-                    platforms: ["PC", "PS4", "XBOX"]
-                }
-            ]
-        };
-
-        // Определяем тип запроса для подбора fallback игр
-        let gameType = 'сюжетная';
-        const queryLower = query.toLowerCase();
-        
-        if (queryLower.includes('расслаб') || queryLower.includes('уют')) {
-            gameType = 'расслабляющее';
-        } else if (queryLower.includes('адреналин') || queryLower.includes('экшен') || queryLower.includes('стрельб')) {
-            gameType = 'адреналиновый';
-        }
-
-        return {
-            analysis: {
-                understoodMood: query || "Поиск интересных игр",
-                recommendedStyle: "Разнообразные жанры",
-                keyFactors: ["Настроение", "Стиль геймплея", "Личные предпочтения"],
-                reasoning: "AI проанализировал ваш запрос и подобрал наиболее подходящие игры на основе ваших предпочтений"
-            },
-            games: fallbackGames[gameType] || fallbackGames['сюжетная']
-        };
     }
 }

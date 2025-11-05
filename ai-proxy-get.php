@@ -8,12 +8,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-// Твой API ключ
+// API ключ DeepSeek
 $apiKey = 'sk-7f36fac6978e4df0b3ee1e97534d5fc4';
 
 // Получаем query из GET параметра
 $userQuery = $_GET['query'] ?? '';
-$query = urldecode($userQuery);
+$query = trim(urldecode($userQuery));
 
 if (empty($query)) {
     http_response_code(400);
@@ -21,30 +21,48 @@ if (empty($query)) {
     exit();
 }
 
-// Промпт для AI
+// Упрощенный промпт для лучшей стабильности
 $prompt = "Пользователь ищет игры по запросу: \"{$query}\". 
 
-Проанализируй запрос и предложи 3-4 самые релевантные игры. 
-
-Верни ответ ТОЛЬКО в формате JSON:
+Верни ТОЛЬКО JSON без каких-либо дополнительных текстов:
 
 {
     \"analysis\": {
-        \"understoodMood\": \"какое настроение понял из запроса\",
-        \"recommendedStyle\": \"рекомендуемый стиль игр\", 
-        \"keyFactors\": [\"фактор1\", \"фактор2\", \"фактор3\"],
-        \"reasoning\": \"объяснение почему подобраны эти игры\"
+        \"understoodMood\": \"краткое описание настроения\",
+        \"recommendedStyle\": \"стиль игр\", 
+        \"keyFactors\": [\"фактор1\", \"фактор2\"],
+        \"reasoning\": \"краткое объяснение подбора\"
     },
     \"games\": [
         {
-            \"name\": \"название игры\",
-            \"genre\": \"жанр\",
-            \"description\": \"описание игры\",
+            \"name\": \"Название игры 1\",
+            \"genre\": \"Жанр\",
+            \"description\": \"Описание игры\",
             \"moodMatch\": 0.95,
-            \"playtime\": \"время игры\",
-            \"vibe\": \"атмосфера\",
-            \"whyPerfect\": \"почему идеально подходит\",
-            \"platforms\": [\"PC\", \"PS5\", \"XBOX\"]
+            \"playtime\": \"Время игры\",
+            \"vibe\": \"Атмосфера\",
+            \"whyPerfect\": \"Почему подходит\",
+            \"platforms\": [\"PC\", \"PS5\"]
+        },
+        {
+            \"name\": \"Название игры 2\", 
+            \"genre\": \"Жанр\",
+            \"description\": \"Описание игры\",
+            \"moodMatch\": 0.90,
+            \"playtime\": \"Время игры\", 
+            \"vibe\": \"Атмосфера\",
+            \"whyPerfect\": \"Почему подходит\",
+            \"platforms\": [\"PC\", \"XBOX\"]
+        },
+        {
+            \"name\": \"Название игры 3\",
+            \"genre\": \"Жанр\", 
+            \"description\": \"Описание игры\",
+            \"moodMatch\": 0.85,
+            \"playtime\": \"Время игры\",
+            \"vibe\": \"Атмосфера\",
+            \"whyPerfect\": \"Почему подходит\",
+            \"platforms\": [\"PC\", \"Switch\"]
         }
     ]
 }";
@@ -58,7 +76,7 @@ $requestData = [
             'content' => $prompt
         ]
     ],
-    'max_tokens' => 4000,
+    'max_tokens' => 3000,
     'temperature' => 0.7,
     'stream' => false
 ];
@@ -90,14 +108,20 @@ if ($error) {
     exit();
 }
 
-// Проверяем, что ответ - валидный JSON
-$jsonResponse = json_decode($response, true);
-if (json_last_error() !== JSON_ERROR_NONE) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Invalid JSON response from DeepSeek API']);
+if ($httpCode !== 200) {
+    http_response_code($httpCode);
+    echo json_encode(['error' => 'DeepSeek API returned error: ' . $httpCode]);
     exit();
 }
 
-http_response_code($httpCode);
+// Проверяем JSON
+$jsonData = json_decode($response, true);
+if (json_last_error() !== JSON_ERROR_NONE) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Invalid JSON from DeepSeek: ' . json_last_error_msg()]);
+    exit();
+}
+
+// Возвращаем успешный ответ
 echo $response;
 ?>

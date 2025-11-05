@@ -102,6 +102,11 @@ class GameFinderApp {
             return;
         }
 
+        if (query.length < 3) {
+            this.showError('Запрос должен содержать хотя бы 3 символа');
+            return;
+        }
+
         this.setLoading(true);
         this.hideError();
 
@@ -114,7 +119,7 @@ class GameFinderApp {
         
     } catch (error) {
         console.error('❌ Search error:', error);
-        this.showError('Произошла ошибка при поиске. Пожалуйста, попробуйте еще раз.');
+        this.showError(error.message);
     } finally {
         this.setLoading(false);
     }
@@ -458,6 +463,7 @@ class GameFinderApp {
             `;
             container.appendChild(particle);
         }
+        
     }
 }
 
