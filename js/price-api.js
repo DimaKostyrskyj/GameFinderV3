@@ -16,29 +16,8 @@ class PriceAPI {
         };
         
         this.priceCache = new Map();
-        this.useProxy = true; // Включить прокси
     }
-
-    // 🔧 Универсальный метод запроса через прокси
-    async fetchWithProxy(url) {
-        if (this.useProxy) {
-            // Используем прокси для обхода CORS
-            const proxyUrl = `/proxy.php?url=${encodeURIComponent(url)}`;
-            try {
-                const response = await fetch(proxyUrl);
-                if (!response.ok) throw new Error(`Proxy error: ${response.status}`);
-                return await response.json();
-            } catch (error) {
-                console.error('Proxy fetch error:', error);
-                throw error;
-            }
-        } else {
-            // Прямой запрос (работает только с CORS)
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-            return await response.json();
-        }
-    }
+    
 
     // 🔍 Поиск игры в Steam
     async searchSteamGame(gameName) {
