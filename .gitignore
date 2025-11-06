@@ -1,0 +1,5 @@
+# Не загружать токены и конфиги
+server/.env
+
+# Не загружать node_modules
+node_modules/

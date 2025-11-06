@@ -238,5 +238,36 @@ document.addEventListener("click", (e) => {
     sendGameToDiscord({ title });
   }
 });
+// Отправка игры в Discord
+async function sendGameToDiscord(game) {
+  try {
+    const res = await fetch("http://localhost:3000/api/send-to-discord", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(game)
+    });
+    const data = await res.json();
+    console.log("📨 Отправлено:", data);
+  } catch (err) {
+    console.error("Ошибка при отправке:", err);
+  }
+}
+
+// Поиск игры через AI (DeepSeek)
+async function findGameByDescription(text) {
+  try {
+    const res = await fetch("http://localhost:3000/api/findGame", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: text, type: "description" })
+    });
+    const data = await res.json();
+    console.log("🔍 Найдено:", data);
+    return data;
+  } catch (err) {
+    console.error("Ошибка поиска:", err);
+    return [];
+  }
+}
 
 window.priceAPI = new PriceAPI();
