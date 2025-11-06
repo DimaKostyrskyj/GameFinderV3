@@ -1,3 +1,5 @@
+const API_BASE = "https://api.gamefinders.org";
+
 // Обновленная система цен с прокси
 class PriceAPI {
     constructor() {
