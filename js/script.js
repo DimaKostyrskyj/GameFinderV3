@@ -7,7 +7,7 @@ const CONFIG = {
 class GameFinderApp {
     constructor() {
         console.log('🎮 Initializing GameFinderApp...');
-        this.gameSearchAI = new GameSearchAI();
+        this.gameSearchAI = new DirectGameSearchAI();
         this.priceAPI = window.priceAPI;
         this.initApp();
     }

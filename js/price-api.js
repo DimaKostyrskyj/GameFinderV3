@@ -217,5 +217,26 @@ class PriceAPI {
         return localStorage.getItem('preferredCurrency');
     }
 }
+async function sendGameToDiscord(game) {
+  const resp = await fetch("/api/send-to-discord", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ game })
+  });
+  const json = await resp.json();
+  if (json.ok) {
+    alert("✅ Игра отправлена в Discord!");
+  } else {
+    alert("⚠️ Ошибка: " + json.error);
+  }
+}
+
+// Навешиваем кнопку
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("send-to-discord")) {
+    const title = e.target.dataset.title;
+    sendGameToDiscord({ title });
+  }
+});
 
 window.priceAPI = new PriceAPI();
