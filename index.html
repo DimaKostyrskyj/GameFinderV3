@@ -146,9 +146,7 @@
                     <h3>🎮 Подобранные игры</h3>
                     <div class="games-container" id="gamesContainer">
                         <!-- Сюда будут вставлены карточки игр -->
-                         <button class="send-to-discord" data-title="Hades II">
-  📩 Отправить в Discord
-</button>
+                         <button class="send-to-discord" data-title="Hades II">📩 Отправить в Discord</button>
                     </div>
                 </div>
             </div>
@@ -189,10 +187,12 @@
     <!-- Скрипты -->
     <script src="js/price-api.js"></script>
     <script>
-  document.querySelectorAll(".send-to-discord").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const title = btn.dataset.title;
-      sendGameToDiscord({ title });
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".send-to-discord").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const title = btn.dataset.title;
+        sendGameToDiscord({ title });
+      });
     });
   });
 </script>

@@ -202,65 +202,68 @@ class GameFinderApp {
     }
 
     displayGames(games) {
-        if (!this.gamesContainer) return;
+    if (!this.gamesContainer) return;
 
-        console.log(`🎮 Displaying ${games.length} games`);
-        
-        this.gamesContainer.innerHTML = games.map((game, index) => `
-            <div class="game-card fade-in-up" style="animation-delay: ${index * 0.1}s" 
-                 data-game='${JSON.stringify(game).replace(/'/g, "&#39;")}'>
-                
-                <div class="game-header">
-                    <div class="game-title-section">
-                        <h4 class="game-title clickable-title">${game.name || 'Название игры'}</h4>
-                        <div class="game-meta">
-                            <span class="game-genre">${game.genre || 'Жанр'}</span>
-                            <span class="game-platforms">${game.platforms?.join(', ') || 'PC'}</span>
-                        </div>
-                    </div>
-                    <div class="match-score">
-                        <div class="score-circle">${Math.round((game.moodMatch || 0.8) * 100)}%</div>
-                        <div class="score-label">Совпадение</div>
+    console.log(`🎮 Displaying ${games.length} games`);
+    
+    // Ограничиваем показ 20 играми
+    const gamesToShow = games.slice(0, 20);
+    
+    this.gamesContainer.innerHTML = gamesToShow.map((game, index) => `
+        <div class="game-card fade-in-up" style="animation-delay: ${index * 0.05}s" 
+             data-game='${JSON.stringify(game).replace(/'/g, "&#39;")}'>
+            
+            <div class="game-header">
+                <div class="game-title-section">
+                    <h4 class="game-title clickable-title">${game.name || 'Название игры'}</h4>
+                    <div class="game-meta">
+                        <span class="game-genre">${game.genre || 'Жанр'}</span>
+                        <span class="game-platforms">${game.platforms?.join(', ') || 'PC'}</span>
                     </div>
                 </div>
-
-                <div class="game-details">
-                    <div class="detail-item">
-                        <span class="detail-icon">⏱️</span>
-                        <span>${game.playtime || 'Время не указано'}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-icon">🎨</span>
-                        <span>${game.vibe || 'Атмосфера не указана'}</span>
-                    </div>
-                </div>
-
-                <div class="game-description">
-                    ${game.description || 'Описание игры будет загружено...'}
-                </div>
-
-                <div class="game-reason">
-                    <div class="reason-title">🎯 Почему подходит:</div>
-                    ${game.whyPerfect || 'Идеально подходит под ваш запрос'}
-                </div>
-
-                <div class="stores-container">
-                    <h4>💸 Узнать цену и купить</h4>
-                    <div class="discord-price-mini">
-                        <div class="discord-mini-content">
-                            <span class="discord-mini-icon">🎮</span>
-                            <span class="discord-mini-text">Актуальные цены в Discord</span>
-                        </div>
-                        <a href="https://discord.gg/MeHJ9epedA" class="discord-mini-btn" target="_blank" onclick="event.stopPropagation()">
-                            Узнать цену
-                        </a>
-                    </div>
-                    <div class="price-note">
-                        💡 Получите самые свежие цены со всех магазинов
-                    </div>
+                <div class="match-score">
+                    <div class="score-circle">${Math.round((game.moodMatch || 0.8) * 100)}%</div>
+                    <div class="score-label">Совпадение</div>
                 </div>
             </div>
-        `).join('');
+
+            <div class="game-details">
+                <div class="detail-item">
+                    <span class="detail-icon">⏱️</span>
+                    <span>${game.playtime || 'Время не указано'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-icon">🎨</span>
+                    <span>${game.vibe || 'Атмосфера не указана'}</span>
+                </div>
+            </div>
+
+            <div class="game-description">
+                ${game.description || 'Описание игры будет загружено...'}
+            </div>
+
+            <div class="game-reason">
+                <div class="reason-title">🎯 Почему подходит:</div>
+                ${game.whyPerfect || 'Идеально подходит под ваш запрос'}
+            </div>
+
+            <div class="stores-container">
+                <h4>💸 Узнать цену и купить</h4>
+                <div class="discord-price-mini">
+                    <div class="discord-mini-content">
+                        <span class="discord-mini-icon">🎮</span>
+                        <span class="discord-mini-text">Актуальные цены в Discord</span>
+                    </div>
+                    <a href="https://discord.gg/MeHJ9epedA" class="discord-mini-btn" target="_blank" onclick="event.stopPropagation()">
+                        Узнать цену
+                    </a>
+                </div>
+                <div class="price-note">
+                    💡 Получите самые свежие цены со всех магазинов
+                </div>
+            </div>
+        </div>
+    `).join('');
 
         // Добавляем обработчики для клика по играм
         this.initGameClickHandlers();

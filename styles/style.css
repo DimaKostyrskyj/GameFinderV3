@@ -3232,3 +3232,101 @@ input:focus, textarea:focus, select:focus {
 .clickable-title:hover {
     color: var(--primary-blue);
 }
+/* Анимации для плавного появления множества игр */
+.games-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 25px;
+    max-height: none;
+}
+
+.game-card {
+    animation: fadeInUp 0.6s ease both;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 1200px) {
+    .games-container {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .games-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .game-card {
+        margin: 0 10px;
+    }
+}
+
+/* Улучшенная статистика */
+.stats-info {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.stats-card {
+    background: linear-gradient(45deg, #0ea5e9, #8b5cf6);
+    padding: 15px 25px;
+    border-radius: 15px;
+    color: white;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    animation: fadeInUp 0.5s ease;
+    box-shadow: 0 8px 25px rgba(14, 165, 233, 0.3);
+}
+
+.stats-icon {
+    font-size: 1.4rem;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-5px);
+    }
+    60% {
+        transform: translateY(-3px);
+    }
+}
+
+/* Плавная анимация для большого количества элементов */
+@keyframes staggeredFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.game-card:nth-child(1) { animation-delay: 0.05s; }
+.game-card:nth-child(2) { animation-delay: 0.1s; }
+.game-card:nth-child(3) { animation-delay: 0.15s; }
+.game-card:nth-child(4) { animation-delay: 0.2s; }
+.game-card:nth-child(5) { animation-delay: 0.25s; }
+.game-card:nth-child(6) { animation-delay: 0.3s; }
+.game-card:nth-child(7) { animation-delay: 0.35s; }
+.game-card:nth-child(8) { animation-delay: 0.4s; }
+.game-card:nth-child(9) { animation-delay: 0.45s; }
+.game-card:nth-child(10) { animation-delay: 0.5s; }
+.game-card:nth-child(11) { animation-delay: 0.55s; }
+.game-card:nth-child(12) { animation-delay: 0.6s; }
+.game-card:nth-child(13) { animation-delay: 0.65s; }
+.game-card:nth-child(14) { animation-delay: 0.7s; }
+.game-card:nth-child(15) { animation-delay: 0.75s; }
+.game-card:nth-child(16) { animation-delay: 0.8s; }
+.game-card:nth-child(17) { animation-delay: 0.85s; }
+.game-card:nth-child(18) { animation-delay: 0.9s; }
+.game-card:nth-child(19) { animation-delay: 0.95s; }
+.game-card:nth-child(20) { animation-delay: 1.0s; }

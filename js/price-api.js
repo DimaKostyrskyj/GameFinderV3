@@ -218,16 +218,18 @@ class PriceAPI {
     }
 }
 async function sendGameToDiscord(game) {
-  const resp = await fetch("/api/send-to-discord", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ game })
-  });
-  const json = await resp.json();
-  if (json.ok) {
-    alert("✅ Игра отправлена в Discord!");
-  } else {
-    alert("⚠️ Ошибка: " + json.error);
+  try {
+    const res = await fetch("http://localhost:3000/api/send-to-discord", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(game)
+    });
+    const data = await res.json();
+    console.log("📨 Отправлено:", data);
+    alert(`🎮 Игра "${game.title}" отправлена в Discord!`);
+  } catch (err) {
+    console.error("Ошибка отправки:", err);
+    alert("❌ Не удалось отправить игру в Discord");
   }
 }
 
